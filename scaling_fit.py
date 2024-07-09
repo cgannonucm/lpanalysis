@@ -72,7 +72,7 @@ def fits_to_df(fits:dict[str,LinearRegression]):
         out_dict[f"k_{n}"] = np.zeros(l)
 
     out_dict["x_0"] = np.zeros(l)
-    out_dict["label"] = np.zeros(l,dtype=StrDType)
+    out_dict["label"] = ["" for i in range(l)]
     
     for n,(label, fit) in enumerate(fits.items()): 
         for i, coef in enumerate(fit.coef_):
@@ -80,6 +80,7 @@ def fits_to_df(fits:dict[str,LinearRegression]):
 
         out_dict["x_0"][n] = fit.intercept_
         out_dict["label"][n] = label
+
     
     return pd.DataFrame(out_dict)
 
@@ -233,8 +234,8 @@ def scaling_nfw_dict(rannulus, mh_space:np.ndarray, z_space:np.ndarray, cosmo,ms
 
 def main():
     fname = "scaling.csv"
-    path_csv = "../data/output/analysis_scaling_nd_annulus_new.csv"
-    path_file =  "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
+    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
 
     key_n_proj = PARAM_KEY_N_PROJ_BOUND
     key_n_proj_infall = PARAM_KEY_N_PROJ_INFALL
@@ -277,7 +278,6 @@ def main():
                 fits[label] = scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=gamma)
 
     
-
     df = fits_to_df(fits)
 
     savedf(df,fname)

@@ -99,7 +99,7 @@ def set_arcsecond_range_x(ax, file, rrange_rvf, cosmo):
     set_arcsecond_range(ax,file,rrange_rvf,cosmo,"x",1,rv)
 
 def main():    
-    path_file_1E13_z05 = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_file_1E13_z05 = "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
 
     file = io_importgalout(path_file_1E13_z05)[path_file_1E13_z05] 
 

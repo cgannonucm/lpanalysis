@@ -133,29 +133,7 @@ def macro_mass_function_fit_manytree(data, mrange, bincount, **kwargs):
 
 
 if __name__ == "__main__":
-#    fname = os.path.basename(__file__)
-#    arguments, values = getopt.getopt(sys.argv[1:],[], ["help"])
-    
-#    for a,v in arguments:
-#        if a in ("-h", "--help"):
-#            print(f"Usage: python {fname} \"path to directory containing galacticus output\" \"path to output csv\"")
-#            exit()
-#        else:
-#            print("Unrecognized argument")
-#            exit()
-#    
-#    if len(values) == 0:
-#        print(f"Must enter path. For help: python {fname} --help")
-#        exit()
-#
-#    if len(values) == 0:
-#        print(f"Unrecognized argument. For help: python {fname} --help")
-#        exit()
-#    
-#    data_dir = values[0] 
-#    path_csv = "output.csv" if len(values) == 1 else values[1]
-
-    data_dir = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/m1e13_z0_5"
+    data_dir = "data/galacticus/xiaolong_update/m1e13_z0_5"
     path_csv = "out/csv/summary_m1E13_z05.csv"
 
     nodedsetstoread = [GParam.MASS_BOUND,GParam.MASS_BASIC,GParam.IS_ISOLATED,GParam.RVIR,GParam.X,GParam.Y,GParam.Z,

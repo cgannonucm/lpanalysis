@@ -33,7 +33,7 @@ from summary_M1E13_z05 import macro_scaling_projected_annulus_rv,macro_sigma_sub
 
 if __name__ == "__main__":
 
-    data_dir = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/cg"
+    data_dir = "data/galacticus/xiaolong_update/cg"
     csv_out = "summary_cg.csv"
 
     nodedsetstoread = [GParam.MASS_BOUND,GParam.MASS_BASIC,GParam.IS_ISOLATED,GParam.RVIR,GParam.X,GParam.Y,GParam.Z,
@@ -134,9 +134,10 @@ if __name__ == "__main__":
     #Virial radius
     macros = add_macro(macro_rvir)
     
-    run_parallel = True
+    run_parallel = False
 
     def run_macros_file_(fpath):
+        print(fpath)
         out = {
                     "filepath":fpath
         }

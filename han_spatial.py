@@ -39,9 +39,9 @@ from scaling_fit import fits_to_df
 from han_model import fit_profile_han
 
 def main():
-    fname = "han_fits.csv"
-    path_nd = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/multihalo" 
-    path_m13z05 =  "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    fname = "han_fits.csv"    
+    path_nd = "data/galacticus/xiaolong_update/multihalo" 
+    path_m13z05 =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
     
     files = io_import_directory(path_nd)
     files |= io_importgalout(path_m13z05)

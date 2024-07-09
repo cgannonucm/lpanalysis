@@ -43,13 +43,13 @@ def set_mass_range(ax:Axes, mrange, alpha, nrange, scale = 1):
     ax.set_ylim(np.asarray(nrange) * to_m * scale)
 
 def main():    
-    path_nd = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/multihalo"
+    path_nd = "data/galacticus/xiaolong_update/multihalo"
     name_out = "spatial_2d_multihalo"
 
     files = io_import_directory(path_nd)
     files_sorted = sort_gal_files_host(files, GParam.MASS_BASIC, reverse=True)
 
-    rrange_mpc = PARAM_DEF_RRANGE_RVF
+    rrange_mpc = (1E-2, 4E-2)
     rbins = 5
     mrange = PARAM_DEF_MRANGE
 
@@ -78,7 +78,7 @@ def main():
     ax_twin_y = ax.twinx()
     set_mass_range(ax_twin_y, mrange, PARAM_DEF_ALPHA, ax.get_ylim())
 
-    ax.loglog()
+    #ax.loglog()
     ax.legend(loc="center left", bbox_to_anchor=(1.1,0.5), fancybox=True, shadow=True) 
 
     ax.set_xlabel(r"$r_{2d}$ [kpc]")

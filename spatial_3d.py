@@ -171,8 +171,8 @@ def plot_han_3d(fig, ax,file,rrange_rvf, rbins, mrange, gamma, norm=1, kwargs_sc
     ax.plot(rvf,dndv * norm, **(KWARGS_DEF_PLOT | dict(label=rf"Han (2016) ($\gamma = {gamma:.2f}$)") | kwargs_plot))
 
 def main():    
-    path_file =  "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
-    path_cat = "/home/charles/research/lensing_perspective_accompaniment/data/caterpillar/subhaloDistributionsCaterpillar.hdf5"
+    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_cat = "data/caterpillar/subhaloDistributionsCaterpillar.hdf5"
 
     rrange_rvf = PARAM_DEF_RRANGE_RVF
     rbins = 30

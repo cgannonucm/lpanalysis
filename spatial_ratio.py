@@ -100,7 +100,7 @@ def get_mhz_label(nodedata):
 
     return r"$\log_{10}" + f"(M_h / M_\odot)={np.log10(mh):.1f}, z = {z:.1f}$"
 
-def plot_ratios(path_data, path_out):
+def plot_ratios(path_data):
     files = io_import_directory(path_data, inclstr=".hdf5")
     files_sorted = sort_gal_files_host(files, GParam.MASS_BASIC, reverse=True)
 
@@ -134,12 +134,11 @@ def plot_ratios(path_data, path_out):
 
 
 def main():    
-    path_nd = "/home/charles/research/lensing_perspective_accompaniment/data/galacticus/xiaolong_update/multihalo"
-    path_out = "/home/charles/research/lensing_perspective_accompaniment/plots/paper"
+    path_nd = "data/galacticus/xiaolong_update/multihalo"
 
     set_plot_defaults()
 
-    plot_ratios(path_nd, path_out)
+    plot_ratios(path_nd)
 
 
 if __name__ == "__main__":

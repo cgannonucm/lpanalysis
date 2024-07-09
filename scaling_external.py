@@ -43,7 +43,7 @@ def scaling_F(mh, z, k1, k2, mscale=1E13, zshift=0.5):
     return np.power(mh / mscale, k1) * np.power(z + zshift, k2)
 
 def main(): 
-    path_csv = "../data/output/analysis_scaling_nd_annulus_new.csv"
+    path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
     scaling_data = import_csv(path_csv)
 
     fit = scaling_fit_mhz_def(scaling_data, key_n_proj=PARAM_KEY_N_PROJ_BOUND)
