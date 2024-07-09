@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for file in "."/*; do
+        ext="${file##*.}"
+        if [ -f "$file" ] & [ $ext == py ]; then
+	 	echo "Running Python file: $file"
+	       	./$file	
+        fi
+done
+#wait
+
