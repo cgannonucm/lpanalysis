@@ -106,24 +106,33 @@ def plot_ratios(path_data):
 
     rrange = PARAM_DEF_RRANGE_RVF
     rbins = 15
-    mrange = PARAM_DEF_MRANGE
+    mrange = np.asarray(PARAM_DEF_MRANGE)
+
+    mrange_arr = np.asarray((mrange, 1E0*mrange, 1E2 * mrange))
 
     fig, axs = plt.subplots(ncols=2,figsize=(18,6))
     ax1, ax2 = axs 
 
-    for nodedata in files_sorted:
-        kwargs_format = KWARGS_DEF_PLOT | dict(label=get_mhz_label(nodedata))
+    y_labels = [r"\rho_{sub} / \rho_{host} (Unevolved)", r"\rho_{sub} / \rho_{host} (Evolved)"]
+    
 
-        plot_spatial_ratio(ax1, nodedata, rrange, rbins, mrange, GParam.MASS_BASIC, plot_log=False,kwargs_format=kwargs_format)
-        plot_spatial_ratio(ax2, nodedata, rrange, rbins, mrange, GParam.MASS_BOUND, plot_log=False,kwargs_format=kwargs_format)
+    for m in mrange_arr:
+        for nodedata in files_sorted:
+            kwargs_format = KWARGS_DEF_PLOT | dict(label=get_mhz_label(nodedata))
+
+            plot_spatial_ratio(ax1, nodedata, rrange, rbins, m, GParam.MASS_BASIC, plot_log=False,kwargs_format=kwargs_format)
+            plot_spatial_ratio(ax2, nodedata, rrange, rbins, m, GParam.MASS_BOUND, plot_log=False,kwargs_format=kwargs_format)
 
     for ax in axs:
         ax.hlines((1,), *rrange, linestyle="dashed", label="Host Density", color="black", **KWARGS_DEF_PLOT)
         ax.set_xlabel("$r / r_v$")
         ax.loglog()
 
-    ax1.set_ylabel(r"$\frac{d^2N}{dm dV}(r) \times (\rho_h(r))^{-1}$")
-    ax2.set_ylabel(r"$\frac{d^2N}{dm_b dV}(r) \times (\rho_h(r))^{-1}$")
+    ax1.set_ylabel(y_labels[0]) 
+    ax2.set_ylabel(y_labels[1]) 
+
+    #ax1.set_ylabel(r"$\frac{d^2N}{dm dV}(r) \times (\rho_h(r))^{-1}$")
+    #ax2.set_ylabel(r"$\frac{d^2N}{dm_b dV}(r) \times (\rho_h(r))^{-1}$")
 
     ax1.set_ylim(8E-1,3E0)
 

@@ -8,12 +8,17 @@ from matplotlib.axes import Axes
 from typing import Any
 import matplotlib.patheffects as pe
 
-from gstk.common.constants import CPhys
+from gstk.common.constants import GParam, CPhys
 from gstk.io import  io_importgalout
+from gstk.scripts.selection import script_select_nodedata, script_selector_halos
+
 from plotting_util import *
 from scaling_fit import scaling_fit_mhz_def, scaling_fit_mhz, import_csv, KEY_DEF_HALOMASS, KEY_DEF_Z, galacticus_interp_tstripped, scaling_han_model, scaling_nfw
 from han_model import fit_profile_han
 from spatial_2d_multihalo import set_mass_range
+from summary_M1E13_z05 import macro_sigma_sub, macro_scaling_projected_annulus
+from conversion import cfactor_shmf
+from symutil import symphony_to_galacticus_dict
 
 
 def plot_scaling(fig, ax:Axes, data, key_toplot, key_toplot_scatter, key_x, 
@@ -66,6 +71,34 @@ def plot_scaling_def(fig, ax:Axes, data, key_toplot, key_toplot_scatter, norm = 
             plot_scaling(fig,ax,data,key_toplot,key_toplot_scatter,key_x,_select,norm, 
                             x_shift,kwargs_fill=_kwargs_fill_combined, kwargs_plot=_kwargs_plot_combined)
 
+
+def plot_sym_mass_scaling(fig, ax:Axes, file_gal, key_to_fit, file_sym_mw, file_sym_group, mrange_gal, 
+                          rrange_sym,  mscale=1E13, zshift=0.5, alpha=PARAM_DEF_ALPHA, sym_z = 0):
+    fit = scaling_fit_mhz(file_gal, KEY_DEF_HALOMASS, KEY_DEF_Z, key_to_fit, mscale=mscale,zshift=zshift)
+    norm = 10**(-fit.intercept_)
+    mrange_sym =  (1E9, 1E10)
+
+    scale_mf = cfactor_shmf(mrange_sym, mrange_gal, alpha=alpha)
+
+    out_mw = macro_sigma_sub(file_sym_mw   , 1E8, -1.93,*rrange_sym, mrange=mrange_sym)
+    out_gr = macro_sigma_sub(file_sym_group, 1E8, -1.93,*rrange_sym, mrange=mrange_sym)
+
+    mh_mw = np.mean(script_select_nodedata(file_sym_mw, script_selector_halos, [GParam.MASS_BASIC]))
+    mh_gr = np.mean(script_select_nodedata(file_sym_group, script_selector_halos, [GParam.MASS_BASIC]))
+
+    key_y = r"f_s \Sigma_{sub} [kpc^{-2}] 1.0E+09 < M < 1.0E+10"
+    key_y_std = r"f_s \Sigma_{sub} [std] [kpc^{-2}] 1.0E+09 < M < 1.0E+10"
+
+    scale_z = (zshift + 0.2)**fit.coef_[1] / (zshift + sym_z)**fit.coef_[1]
+    
+    m = np.asarray((mh_mw, mh_gr))
+    y = np.asarray((out_mw[key_y], out_gr[key_y])) * scale_mf / norm * scale_z 
+    y_std = np.asarray((out_mw[key_y_std], out_gr[key_y_std])) * scale_mf / norm * scale_z 
+
+    ax.errorbar(m, y, yerr=y_std, **KWARGS_DEF_ERR, fmt="o", color="tab:red")
+
+    ax.annotate("Symphony (Milky Way)", xy=(m[0], y[0]), xytext=(1.1 * m[0],y[0]))
+    ax.annotate("Symphony (Group)", xy=(m[1], y[1]), xytext=(m[1], 0.6 * y[1]), ha="center", va="top")
 
 def plot_scaling_fit(fig, ax, data, key_tofit, mhspace, zspace, key_mass = None, key_z = None, mscale = 1E13, zshift = 0.5,
                         normalize = True, plot_x_label="z", kwargs_plot = None, kwargs_plot_list = None):
@@ -141,6 +174,7 @@ key_n_proj_infall = PARAM_KEY_N_PROJ_INFALL
 key_n_proj_infall_scatter = PARAM_KEY_N_PROJ_INFALL_SCATTER
 
 rannulus = PARAM_DEF_RANNULUS
+ylim = (7E-2, 2.6)
  
 kwargs_fill = dict(
                         path_effects=[
@@ -211,6 +245,9 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
 
     label_hm = lambda m: "$\log_{10}(M_h / M_\odot) = " + f"{np.log10(m):.1f}" + r"$" 
 
+    for ax in axs:
+        ax.set_prop_cycle(color=['tab:olive', 'tab:pink'])
+
     ax1, ax2 = axs
 
     plot_scaling_def(fig, ax1, scaling_data,key_n_proj_infall, key_n_proj_infall_scatter,
@@ -255,7 +292,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
 
     for ax, norm in zip(axs, ax_norm):
         ax.loglog()
-        ax.set_ylim((0.10340376167294436, 3.048169659541554))
+        ax.set_ylim(ylim)
         ax.set_xlim(np.asarray((0.2,0.8)) + 0.5)
         set_ticks_z(ax, scaling_data, nticks=4) 
         set_ticks_scaling(ax, (0.2, 2.5), nticks=6)
@@ -265,6 +302,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
         set_mass_range(ax_twin_y,(1E8,1E9), PARAM_DEF_ALPHA, np.asarray(ax.get_ylim()) *  norm)
         ax_twin_y.set_ylabel("Projected Mass in Substructure")
         ax_twin_y.set_yscale("log")
+
 
     ax1.set_ylabel("$F$")
     ax2.set_ylabel("$F_b$")
@@ -353,7 +391,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
     for ax, norm in zip(axs, ax_norm):
         ax.loglog()
         ax.yaxis.set_minor_locator(plt.NullLocator())
-        ax.set_ylim((0.10340376167294436, 3.048169659541554))
+        ax.set_ylim(ylim)
         ax.set_xlim(*mh_range)
         #set_ticks_z(ax, scaling_data, nticks=4) 
         set_ticks_scaling(ax, (0.2, 2.5), nticks=6)
@@ -361,6 +399,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
         ax_twin_y = ax.twinx()
         ax_twin_y.set_ylabel("Projected Mass in Substructure")
         ax_twin_y.set_yscale("log")
+        set_mass_range(ax_twin_y, (1E8,1E9), PARAM_DEF_ALPHA, np.asarray(ax.get_ylim()) *  norm)
 
     ax1.set_ylabel("$F$")
     ax2.set_ylabel("$F_b$")
@@ -371,16 +410,27 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
 def main():      
     path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
     path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_symdir = "data/symphony/"
+    path_sym_group = path_symdir + "SymphonyGroup/"
+    path_sym_mw = path_symdir + "SymphonyMilkyWay/"
 
     scaling_data = import_csv(path_csv)
     filend = io_importgalout(path_file)[path_file] 
+
+    iSnap = -1
+    file_sym_mw = symphony_to_galacticus_dict(path_sym_mw, iSnap)
+    file_sym_group = symphony_to_galacticus_dict(path_sym_group, iSnap)
 
     set_plot_defaults()
 
     fig, axs = plt.subplots(nrows=2,ncols=2,figsize=(18,12))
 
+
     plot_mh_scaling(fig,axs[0],filend,scaling_data)
     plot_z_scaling(fig,axs[1],filend,scaling_data)
+    plot_sym_mass_scaling(fig, axs[0][1], scaling_data, key_n_proj_bound, file_sym_mw, file_sym_group, (1E8, 1E9), (0, 1E-1))
+
+
 
     #axs[1,1].legend(loc="upper right", bbox_to_anchor=(-0.5,-1), fancybox=True, shadow=True) 
     

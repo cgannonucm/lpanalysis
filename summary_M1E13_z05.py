@@ -18,7 +18,7 @@ from gstk.scripts.sigmasub import script_sigmasub_alltrees, script_n_annulus_all
 from gstk.macros.common import MacroScalingKeys, macro_mass, macro
 from gstk.scripts.common import ScriptProperties, script
 from gstk.common.constants import GParam
-from gstk.scripts.selection import script_selector_halos, script_selector_subhalos_valid
+from gstk.scripts.selection import script_selector_halos, script_selector_subhalos_valid, script_select_nodedata
 from gstk.scripts.spatial import script_rvir
 from gstk.gfile import GFile
 from gstk.scripts.misc import script_treecount
@@ -49,7 +49,12 @@ def macro_scaling_projected_annulus_rv(file:GFile, mpivot:float, alpha:float, rv
     return outputs
 
 @macro_mass(**ScriptProperties.KEY_KWARG_DEF)
-def macro_sigma_sub(file:GFile, mpivot:float, alpha:float, r0:float,r1:float,mrange:tuple[float,float],**kwargs)->dict[str,float]:
+def macro_sigma_sub(file:GFile, mpivot:float, alpha:float, r0:float,r1:float,mrange:tuple[float,float],
+                    scale_hmz=False, scale_hmz_coef=None, scale_hmz_zshift=None, scale_hmz_mscale=None,**kwargs)->dict[str,float]:
+    scale_hmz_coef = (0.37, 1.05) if scale_hmz_coef is None else scale_hmz_coef
+    scale_hmz_zshift = 0.5 if scale_hmz_zshift is None else scale_hmz_zshift
+    scale_hmz_mscale = 1E13 if scale_hmz_mscale is None else scale_hmz_mscale
+
     outputs = {}    
 
     sigsub_at_i,sigsub_var_i  = script_n_annulus_alltrees(file,mpivot,alpha,r0,r1,script_selector_subhalos_valid,mrange,key_mass=GParam.MASS_BASIC)
@@ -65,11 +70,20 @@ def macro_sigma_sub(file:GFile, mpivot:float, alpha:float, r0:float,r1:float,mra
     n0 = sigsub_var_N0(mrange,alpha,mpivot)
     area = np.pi * (r1**2 - r0**2) * CPhys.MPC_TO_KPC**2
 
-    outputs["\Sigma_{sub} [kpc^{-2}]"]              = n_avg_i / area / n0
-    outputs["\Sigma_{sub} [std] [kpc^{-2}]"]        = n_std_i / area / n0
-    outputs["f_s \Sigma_{sub} [kpc^{-2}]"]          = n_avg_b / area / n0
-    outputs["f_s \Sigma_{sub} [std] [kpc^{-2}]"]    = n_std_b / area / n0
-    outputs["f_s"]                                  = n_avg_fs 
+    scale = 1
+    if scale_hmz:
+        raise NotImplementedError()
+        hm = np.mean(script_select_nodedata(file, script_selector_halos, [GParam.MASS_BASIC]))
+        z = np.mean(script_select_nodedata(file, script_selector_halos, [GParam.Z_LASTISOLATED]))
+        k1, k2 = scale_hmz_coef
+        scale = 1 / (hm / scale_hmz_mscale)**k1 / (z + scale_hmz_zshift)**k2 
+        
+
+    outputs["\Sigma_{sub} [kpc^{-2}]"]              = n_avg_i / area / n0 * scale
+    outputs["\Sigma_{sub} [std] [kpc^{-2}]"]        = n_std_i / area / n0 * scale
+    outputs["f_s \Sigma_{sub} [kpc^{-2}]"]          = n_avg_b / area / n0 * scale
+    outputs["f_s \Sigma_{sub} [std] [kpc^{-2}]"]    = n_std_b / area / n0 * scale
+    outputs["f_s"]                                  = n_avg_fs
     outputs["f_s [std]"]                            = n_std_fs 
        
     return outputs
@@ -90,7 +104,6 @@ def script_tree_avg(data, script, selector_function, script_args = None, script_
     out = []
 
     for treenum in range(treecount): 
-        print(treenum)
         tree_selected = select & (node_trees_select == treenum)
         selector = lambda d, **k: tree_selected
         out.append(script(data, *script_args, selector=selector, **script_kwargs)) 

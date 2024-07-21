@@ -29,7 +29,7 @@ def plot_spatial(ax:Axes, file, rrange_rvf, rbins, mrange, kwargs_script = None,
     mrange_rescale = mrange if mrange_rescale is None else mrange_rescale
     alpha = PARAM_DEF_ALPHA if alpha is None else alpha
 
-    rescale = 1 #cfactor_shmf(mrange,mrange_rescale, alpha)
+    rescale = cfactor_shmf(mrange,mrange_rescale, alpha)
  
     ax.plot(rspace/rv,dndv * 1E-9 * rescale, **kwargs_plot)
 
@@ -46,7 +46,8 @@ def plot_spatial_3d_scatter(fig, ax:Axes, file, rrange_rvf, rbins, mrange,
     mrange_rescale = mrange if mrange_rescale is None else mrange_rescale
     alpha = PARAM_DEF_ALPHA if alpha is None else alpha
 
-    #rescale = cfactor_shmf(mrange,mrange_rescale, alpha) * CPhys.MPC_TO_KPC**(-3) * factor
+    print(alpha)
+    rescale = cfactor_shmf(mrange,mrange_rescale, alpha) * CPhys.MPC_TO_KPC**(-3) * factor
     rescale = CPhys.MPC_TO_KPC**(-3) * factor
     
     plot_x, plot_y, plot_y_std = rspace / rv, dndv * rescale, err  * rescale
@@ -133,37 +134,15 @@ def get_spatial_symphony():
     binvol = (4/3) * np.pi * (sy_rvf[1:]**3 - sy_rvf[:-1]**3) * rv**3 
     dndv = (sy_n[1:] + sy_n[:-1]) / binvol / 2
     return sy_rvf[1:], dndv * 1E-9
- 
-def plot_spatial_unevolved(fig, ax, file, rrange, rbins, mrange, kwargs_plot = None, mrange_rescale = None):
+    
+
+def plot_spatial_3d(fig, ax, file, rrange, rbins, mrange, kwargs_plot = None, mrange_rescale = None):
     kwargs_plot = {} if kwargs_plot is None else kwargs_plot
 
-    plot_spatial(ax,file, rrange, rbins, mrange,
-                    dict(key_mass=GParam.MASS_BASIC), 
-                    KWARGS_DEF_PLOT | dict(label="Galacticus (Unevolved)") | kwargs_plot, 
-                    mrange_rescale=mrange_rescale)
-
-    plot_spatial_3d_scatter(fig,ax,file,rrange,30,mrange, 
-                                kwargs_script=dict(key_mass=GParam.MASS_BASIC), 
-                                kwargs_plot=(KWARGS_DEF_FILL | dict(color="tab:blue")), 
-                                mrange_rescale=mrange_rescale)    
-  
-
-def plot_spatial_evolved(fig, ax, file, rrange, rbins, mrange, kwargs_plot = None, mrange_rescale = None):
-    kwargs_plot = {} if kwargs_plot is None else kwargs_plot
-
-
-    plot_spatial(ax,file, rrange, rbins,mrange,
-                    dict(key_mass=GParam.MASS_BOUND), 
-                    KWARGS_DEF_PLOT | dict(label="Galacticus (Evolved)", color="black") | kwargs_plot, 
-                    mrange_rescale=mrange_rescale)
-
-    plot_spatial_3d_scatter(fig,ax,file,rrange,30,mrange, 
-                                kwargs_script=dict(key_mass=GParam.MASS_BOUND), 
-                                kwargs_plot=KWARGS_DEF_FILL, 
-                                mrange_rescale=mrange_rescale)
-
-
-
+    plot_spatial(ax,file, rrange, rbins,mrange,dict(key_mass=GParam.MASS_BASIC), KWARGS_DEF_PLOT | dict(label="Galacticus (Unevolved)") | kwargs_plot, mrange_rescale=mrange_rescale)
+    plot_spatial_3d_scatter(fig,ax,file,rrange,30,mrange, kwargs_script=dict(key_mass=GParam.MASS_BASIC), kwargs_plot=(KWARGS_DEF_FILL | dict(color="tab:blue")), mrange_rescale=mrange_rescale)    
+    plot_spatial(ax,file, rrange, rbins,mrange,dict(key_mass=GParam.MASS_BOUND), KWARGS_DEF_PLOT | dict(label="Galacticus (Evolved)") | kwargs_plot, mrange_rescale=mrange_rescale)
+    plot_spatial_3d_scatter(fig,ax,file,rrange,30,mrange, kwargs_script=dict(key_mass=GParam.MASS_BOUND), kwargs_plot=KWARGS_DEF_FILL, mrange_rescale=mrange_rescale)
 
 
 def plot_average_density(fig, ax, file, rrange_rvf, rbins, mrange, kwargs_script=None, kwargs_plot=None,
@@ -177,7 +156,7 @@ def plot_average_density(fig, ax, file, rrange_rvf, rbins, mrange, kwargs_script
     rescale = cfactor_shmf(mrange,mrange_rescale, alpha)
 
     rvfspace, nfw = get_profile_nfw_normalized(file,rrange_rvf,rbins,mrange,(dict(key_mass = GParam.MASS_BASIC) | kwargs_script))
-    ax.plot(rvfspace, nfw * rescale, **(KWARGS_DEF_PLOT | dict(linestyle="dashed", label="Host Density \n(Rescaled)", color="grey")| kwargs_plot))
+    ax.plot(rvfspace, nfw * rescale, **(KWARGS_DEF_PLOT | dict(linestyle="dashed", label="Host Density \n(Rescaled)")| kwargs_plot))
 
 def plot_spatial_3d_cat(fig,ax,file, kwargs_plot = None, mrange_rescale = None, alpha = None):
     kwargs_plot = {} if kwargs_plot is None else kwargs_plot
@@ -220,11 +199,11 @@ def plot_han_3d(fig, ax,file,rrange_rvf, rbins, mrange, gamma, norm=1,
 
     ax.plot(rvf,dndv * norm * rescale, **(KWARGS_DEF_PLOT | dict(label=rf"Han (2016) ($\gamma = {gamma:.2f}$)") | kwargs_plot))
 
-def main(): 
-    #path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+def main():    
+    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
     path_cat = "data/caterpillar/subhaloDistributionsCaterpillar.hdf5"
     path_symphony = "data/symphony/SymphonyGroup/"
-    path_file = "/home/charles/research/lpanalysis/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+
     
     #rrange_rvf = PARAM_DEF_RRANGE_RVF
     rrange_rvf = (0.1, 1)
@@ -236,8 +215,7 @@ def main():
 
     filend = io_importgalout(path_file)[path_file] 
     filecat = h5py.File(path_cat)
-    # isnap 203 is snapshot at z~0.5
-    sym_nodedata = symphony_to_galacticus_dict(path_symphony, iSnap=203)
+    sym_nodedata = symphony_to_galacticus_dict(path_symphony)
 
     set_plot_defaults()
 
@@ -246,26 +224,13 @@ def main():
     #han_fit = fit_profile_han(filend, rrange_rvf, rbins, mrange)
     #han_norm, han_gamma = 10**(han_fit.intercept_), han_fit.coef_[0]
 
-    #print(np.mean(script_select_nodedata(filend, script_selector_halos, [GParam.RVIR])))
-    #print(np.mean(script_select_nodedata(sym_nodedata, script_selector_halos, [GParam.RVIR])))
 
 
+    plot_spatial_3d(fig,ax,filend,rrange_rvf,rbins,mrange, dict(zorder=10), mrange_rescale=mrange_rescale)
+    plot_average_density(fig,ax,filend,rrange_rvf,rbins,mrange, dict(zorder=5), mrange_rescale=mrange_rescale)
 
-    #plot_spatial_evolved(fig,ax,filend,rrange_rvf,rbins,(1E9, 1E10), 
-    #                     dict(zorder=10))
-
-    plot_spatial_unevolved(fig,ax,filend,rrange_rvf,rbins,mrange,
-                            dict(zorder=10), mrange_rescale=mrange_rescale)
-    
-    plot_spatial_evolved(fig,ax,filend,rrange_rvf,rbins,mrange, 
-                         dict(zorder=10))
-
-    plot_average_density(fig,ax,filend,rrange_rvf,rbins,mrange, dict(zorder=5, color="grey"), 
-                         mrange_rescale=mrange_rescale)
-
-    
-    #plot_spatial_3d_cat(fig,ax,filecat, dict(zorder=5))
-    #plot_spatial_3d_symphony(fig, ax, kwargs_plot=dict(zorder=5), mrange_rescale=mrange_rescale)
+    plot_spatial_3d_cat(fig,ax,filecat, dict(zorder=5), mrange_rescale=mrange_rescale)
+    plot_spatial_3d_symphony(fig, ax, kwargs_plot=dict(zorder=5), mrange_rescale=mrange_rescale)
 
     #plot_han_3d(fig,ax,filend,rrange,rbins,mrange, 0.7, dict(zorder=10))
     #plot_han_3d(fig,ax,filend,rrange,rbins,mrange, 1, kwargs_plot=dict(zorder=10))
@@ -274,7 +239,8 @@ def main():
     #                kwargs_plot=dict(zorder=10, label="Han (2016) (Best Fit)"), mrange_rescale=mrange_rescale) 
 
     plot_spatial_3d_scatter(fig, ax, sym_nodedata, rrange_rvf, rbins, mrange_sym, 
-                            error_plot=True, kwargs_plot=dict(zorder=30, label="Symphony (Group)", color="tab:green"))
+                            error_plot=True, kwargs_plot=dict(zorder=30, label="Symphony (Group)"), 
+                            mrange_rescale=mrange_rescale)
 
     ax.loglog()
 

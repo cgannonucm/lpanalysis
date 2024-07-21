@@ -10,6 +10,8 @@ KWARGS_DEF_PLOT = dict(linewidth=5)
 KWARGS_DEF_ERR = KWARGS_DEF_PLOT |  dict(capsize=5, markersize=8,
                                         path_effects=[pe.Stroke(linewidth=4, foreground='black'), pe.Normal()])
 
+KWARGS_DEF_FILL = dict(zorder=1, alpha=0.5, color="tab:orange")
+
 PATH_OUT = "out"
 PATH_PLOTS = "plots"
 PATH_CSV = "csv"
