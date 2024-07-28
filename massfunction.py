@@ -142,7 +142,9 @@ def plot_massfunction(fig, ax, data, mrange, bincount, selector_function=None, p
     ax.plot(plotx, ploty, **(KWARGS_DEF_PLOT | plot_kwargs))
 
 def plot_massfunction_scatter(fig, ax:Axes, data, mrange, bincount, selector_function=None, plot_kwargs=None,
-                        script_kwargs=None, plot_dndlnm=False, useratio = True, error_plot=False, factor=1):
+                                script_kwargs=None, plot_dndlnm=False, useratio = True, error_plot=False, 
+                                factor=1, nsigma = 1):
+
     plot_kwargs = {} if plot_kwargs is None else plot_kwargs
     script_kwargs = {} if script_kwargs is None else script_kwargs
     selector_function = script_selector_subhalos_valid if selector_function is None else selector_function
@@ -170,7 +172,7 @@ def plot_massfunction_scatter(fig, ax:Axes, data, mrange, bincount, selector_fun
 
     if plot_dndlnm:
         ploty       = sub_dndm_avg * util_binedgeavg(sub_m) * factor
-        ploty_std   = sub_dndm_std * util_binedgeavg(sub_m) * factor
+        ploty_std   = sub_dndm_std * util_binedgeavg(sub_m) * factor * nsigma
 
     ploty_min, ploty_max = ploty - ploty_std, ploty + ploty_std
 
@@ -242,6 +244,11 @@ def main():
                                 plot_kwargs=dict(label="Symphony", zorder=2), 
                                 error_plot=True)   
 
+    #plot_massfunction_scatter(fig, ax, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
+    #                            useratio=useratio,
+    #                            plot_kwargs=dict(label="Symphony", zorder=2), 
+    #                            error_plot=True, nsigma=2)   
+
     plot_massfunction(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio, 
                                 plot_kwargs=dict(label="Galacticus", color="black", zorder=3))
@@ -249,6 +256,11 @@ def main():
     plot_massfunction_scatter(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio,
                                 plot_kwargs=dict(label="Galacticus (scatter)", zorder=1))
+
+    plot_massfunction_scatter(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+                                useratio=useratio, nsigma=2,
+                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1))
+
 
 
 

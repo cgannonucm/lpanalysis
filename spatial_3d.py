@@ -60,7 +60,7 @@ def plot_spatial_3d_scatter(fig, ax:Axes, file, rrange_rvf, rbins, mrange,
     ax.fill_between(plot_x, lower, upper, **(kwargs_plot | dict(label="Scatter")))
 
 def get_spatial_cat(f):
-    cat_dn = read_dataset(f["radialDistribution"]["radialDistribution"])
+    cat_dn = read_dataset(f["radialDistributin"]["radialDistribution"])
     cat_dn_error = read_dataset(f["radialDistribution"]["radialDistributionError"])
     cat_rfraction = read_dataset(f["radialDistribution"]["radiusFractional"])
 
@@ -243,8 +243,8 @@ def main():
 
     fig, ax = plt.subplots(figsize=(9,6))
     
-    #han_fit = fit_profile_han(filend, rrange_rvf, rbins, mrange)
-    #han_norm, han_gamma = 10**(han_fit.intercept_), han_fit.coef_[0]
+    han_fit = fit_profile_han(filend, rrange_rvf, rbins, mrange)
+    han_norm, han_gamma = 10**(han_fit.intercept_), han_fit.coef_[0]
 
     #print(np.mean(script_select_nodedata(filend, script_selector_halos, [GParam.RVIR])))
     #print(np.mean(script_select_nodedata(sym_nodedata, script_selector_halos, [GParam.RVIR])))
@@ -270,8 +270,9 @@ def main():
     #plot_han_3d(fig,ax,filend,rrange,rbins,mrange, 0.7, dict(zorder=10))
     #plot_han_3d(fig,ax,filend,rrange,rbins,mrange, 1, kwargs_plot=dict(zorder=10))
     #plot_han_3d(fig,ax,filend,rrange,rbins,mrange, 1.35, kwargs_plot=dict(zorder=10))
-    #plot_han_3d(fig,ax,filend,rrange_rvf,rbins,mrange, gamma=han_gamma,norm=han_norm,
-    #                kwargs_plot=dict(zorder=10, label="Han (2016) (Best Fit)"), mrange_rescale=mrange_rescale) 
+    plot_han_3d(fig,ax,filend,rrange_rvf,rbins,mrange, gamma=han_gamma,norm=han_norm,
+                    kwargs_plot=dict(zorder=10, label="Han (2016) (Best Fit)", color="tab:purple"),
+                    mrange_rescale=mrange_rescale) 
 
     plot_spatial_3d_scatter(fig, ax, sym_nodedata, rrange_rvf, rbins, mrange_sym, 
                             error_plot=True, kwargs_plot=dict(zorder=30, label="Symphony (Group)", color="tab:green"))

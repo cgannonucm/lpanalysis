@@ -89,16 +89,25 @@ def plot_sym_mass_scaling(fig, ax:Axes, file_gal, key_to_fit, file_sym_mw, file_
     key_y = r"f_s \Sigma_{sub} [kpc^{-2}] 1.0E+09 < M < 1.0E+10"
     key_y_std = r"f_s \Sigma_{sub} [std] [kpc^{-2}] 1.0E+09 < M < 1.0E+10"
 
-    scale_z = (zshift + 0.2)**fit.coef_[1] / (zshift + sym_z)**fit.coef_[1]
+    scale_z = 1 / out_gr[key_y]#(zshift + 0.2)**fit.coef_[1] / (zshift + sym_z)**fit.coef_[1]
     
     m = np.asarray((mh_mw, mh_gr))
-    y = np.asarray((out_mw[key_y], out_gr[key_y])) * scale_mf / norm * scale_z 
-    y_std = np.asarray((out_mw[key_y_std], out_gr[key_y_std])) * scale_mf / norm * scale_z 
+    #y = np.asarray((out_mw[key_y], out_gr[key_y])) * scale_mf / norm * scale_z 
+    #y_std = np.asarray((out_mw[key_y_std], out_gr[key_y_std])) * scale_mf / norm * scale_z 
+    y = np.asarray((out_mw[key_y], out_gr[key_y])) * scale_z 
+    y_std = np.asarray((out_mw[key_y_std], out_gr[key_y_std])) * scale_z 
+
+    kwargs_txt_outline = dict(
+                        path_effects=[
+                                        pe.Stroke(foreground="black", alpha=1, linewidth=2),
+                                        pe.Normal()
+                                    ]
+                )   
 
     ax.errorbar(m, y, yerr=y_std, **KWARGS_DEF_ERR, fmt="o", color="tab:red")
 
-    ax.annotate("Symphony (Milky Way)", xy=(m[0], y[0]), xytext=(1.1 * m[0],y[0]))
-    ax.annotate("Symphony (Group)", xy=(m[1], y[1]), xytext=(m[1], 0.6 * y[1]), ha="center", va="top")
+    ax.annotate("Symphony (Milky Way)", xy=(m[0], y[0]), xytext=(1.1 * m[0],0.7 * y[0]), color="tab:red", **kwargs_txt_outline)
+    ax.annotate("Symphony (Group)", xy=(m[1], y[1]), xytext=(m[1], 0.6 * y[1]), ha="center", va="top", color="tab:red", **kwargs_txt_outline)
 
 def plot_scaling_fit(fig, ax, data, key_tofit, mhspace, zspace, key_mass = None, key_z = None, mscale = 1E13, zshift = 0.5,
                         normalize = True, plot_x_label="z", kwargs_plot = None, kwargs_plot_list = None):
@@ -166,7 +175,6 @@ def set_ticks_scaling(ax, range, nticks=4, key_axis = "y", fstring=None):
     if key_axis == "y":
         ax.set_yticks(nspace) 
         ax.set_yticklabels([fstring.format(n) for n in nspace])
-
 
 key_n_proj_bound = PARAM_KEY_N_PROJ_BOUND
 key_n_proj_bound_scatter = PARAM_KEY_N_PROJ_BOUND_SCATTER
@@ -302,10 +310,14 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
         set_mass_range(ax_twin_y,(1E8,1E9), PARAM_DEF_ALPHA, np.asarray(ax.get_ylim()) *  norm)
         ax_twin_y.set_ylabel("Projected Mass in Substructure")
         ax_twin_y.set_yscale("log")
+        ax_twin_y.set_visible(False)
 
 
-    ax1.set_ylabel("$F$")
-    ax2.set_ylabel("$F_b$")
+    #ax1.set_ylabel("$F$")
+    #ax2.set_ylabel("$F_b$")
+
+    ax1.set_ylabel("Scaling (unevolved)")
+    ax2.set_ylabel("Scaling (evolved)")
 
     
 
@@ -392,7 +404,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
         ax.loglog()
         ax.yaxis.set_minor_locator(plt.NullLocator())
         ax.set_ylim(ylim)
-        ax.set_xlim(*mh_range)
+        ax.set_xlim(8E11, 3.5E13)
         #set_ticks_z(ax, scaling_data, nticks=4) 
         set_ticks_scaling(ax, (0.2, 2.5), nticks=6)
         ax.set_xlabel(r"Halo Mass [$M_\odot$]")
@@ -400,12 +412,14 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
         ax_twin_y.set_ylabel("Projected Mass in Substructure")
         ax_twin_y.set_yscale("log")
         set_mass_range(ax_twin_y, (1E8,1E9), PARAM_DEF_ALPHA, np.asarray(ax.get_ylim()) *  norm)
-
-    ax1.set_ylabel("$F$")
-    ax2.set_ylabel("$F_b$")
+        ax_twin_y.set_visible(False)
 
 
+    #ax1.set_ylabel("$F$")
+    #ax2.set_ylabel("$F_b$")
 
+    ax1.set_ylabel("Scaling (unevolved)")
+    ax2.set_ylabel("Scaling (evolved)")
 
 def main():      
     path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
@@ -417,7 +431,8 @@ def main():
     scaling_data = import_csv(path_csv)
     filend = io_importgalout(path_file)[path_file] 
 
-    iSnap = -1
+    #iSnap = -1
+    iSnap = 203 
     file_sym_mw = symphony_to_galacticus_dict(path_sym_mw, iSnap)
     file_sym_group = symphony_to_galacticus_dict(path_sym_group, iSnap)
 
@@ -429,8 +444,6 @@ def main():
     plot_mh_scaling(fig,axs[0],filend,scaling_data)
     plot_z_scaling(fig,axs[1],filend,scaling_data)
     plot_sym_mass_scaling(fig, axs[0][1], scaling_data, key_n_proj_bound, file_sym_mw, file_sym_group, (1E8, 1E9), (0, 1E-1))
-
-
 
     #axs[1,1].legend(loc="upper right", bbox_to_anchor=(-0.5,-1), fancybox=True, shadow=True) 
     
