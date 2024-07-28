@@ -233,45 +233,74 @@ def main():
 
     set_plot_defaults()
 
-    fig, ax = plt.subplots(figsize=(9,6))
+    fig, axs = plt.subplots(ncols = 2, figsize=(18,6))
+    ax0, ax1 = axs
 
-    #plot_massfunction_symphony(fig, ax, path_symphony, bincount, mrange_sym,
-    #                            plot_dnlnm=plot_dndlnm, useRatio=useratio, 
-    #                            plot_kwargs=dict(label="Symphony (Group)", zorder=2))
+    # ax 0 
 
-    plot_massfunction_scatter(fig, ax, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
+    plot_massfunction_scatter(fig, ax0, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio,
                                 plot_kwargs=dict(label="Symphony", zorder=2), 
                                 error_plot=True)   
 
-    #plot_massfunction_scatter(fig, ax, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
-    #                            useratio=useratio,
-    #                            plot_kwargs=dict(label="Symphony", zorder=2), 
-    #                            error_plot=True, nsigma=2)   
-
-    plot_massfunction(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+    plot_massfunction(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio, 
                                 plot_kwargs=dict(label="Galacticus", color="black", zorder=3))
 
-    plot_massfunction_scatter(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+    plot_massfunction_scatter(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio,
-                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1))
+                                plot_kwargs=dict(zorder=1))
 
-    plot_massfunction_scatter(fig, ax, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+    plot_massfunction_scatter(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
                                 useratio=useratio, nsigma=2,
                                 plot_kwargs=dict(label="Galacticus (scatter)", zorder=1))
 
 
 
+    ax0.loglog()
+
+    ax0.set_xlabel(r"$m / M_{h}$")
+    ax0.set_ylabel(r"$\frac{dN}{d\ln m}$")
+
+    ax0.legend()
 
 
+    # ax 1
 
-    plt.loglog()
+    kwargs_select_inner = dict(
+                                    selector_function = lambda d, **k: script_selector_subhalos_valid(d, **k) & script_selector_annulus(d, **k), 
+                                    script_kwargs = dict(
+                                            r0 = 0,
+                                            r1 = 5E-2
+                                    )  
+                               )
 
-    ax.set_xlabel(r"$m / M_{h}$")
-    ax.set_ylabel(r"$\frac{dN}{d\ln m}$")
+    plot_massfunction_scatter(fig, ax1, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
+                                useratio=useratio,
+                                plot_kwargs=dict(label="Symphony", zorder=2), 
+                                error_plot=True, **kwargs_select_inner)   
 
-    ax.legend()
+    plot_massfunction(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+                                useratio=useratio,
+                                plot_kwargs=dict(label="Galacticus", color="black", zorder=3),
+                                **kwargs_select_inner)
+
+    plot_massfunction_scatter(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+                                useratio=useratio,
+                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1),
+                                **kwargs_select_inner)
+
+    plot_massfunction_scatter(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
+                                useratio=useratio, nsigma=2,
+                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1), 
+                                **kwargs_select_inner)
+
+    ax1.loglog()
+
+    ax1.set_xlabel(r"$m / M_{h}$")
+    ax1.set_ylabel(r"$\frac{dN}{d\ln m}$")
+
+
 
     savefig(fig, fname + ".png")
     savefig(fig, fname + ".pdf")
