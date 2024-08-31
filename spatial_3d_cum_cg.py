@@ -33,6 +33,8 @@ def main():
     
     path_cg1 = "data/galacticus/xiaolong_update/cg-2/lsubmodv3.1-cg-date-07.11.2024-time-00.55.15-date-07.11.2024-time-00.55.16-z-5.00000E-01-mh-1.00000E+13-mstar-1.00000E+12-dmstar-0.00000E+00-drstar-0.00000E+00.xml.hdf5"
 
+    path_cg2 = "data/galacticus/xiaolong_update/cg-2/lsubmodv3.1-cg-date-07.11.2024-time-00.55.15-date-07.11.2024-time-00.55.16-z-5.00000E-01-mh-1.00000E+13-mstar-2.51189E+11-dmstar-0.00000E+00-drstar-0.00000E+00.xml.hdf5"
+
     #rrange_rvf = PARAM_DEF_RRANGE_RVF
     rrange_rvf = (0.1, 1)
     rbins = 25
@@ -42,7 +44,8 @@ def main():
     mrange_rescale = (1E9, 1E10)
 
     filend = io_importgalout(path_file)[path_file] 
-    filecg = io_importgalout(path_cg1)[path_cg1] 
+    filecg = io_importgalout(path_cg2)[path_cg2] 
+
     # isnap 203 is snapshot at z~0.5
     #sym_nodedata = symphony_to_galacticus_dict(path_symphony, iSnap=203)
 
@@ -76,22 +79,32 @@ def main():
 
     #ax 2
     ax1:Axes = ax1
-    plot_spatial_cum_ratio(fig,ax1, filecg, filend, rrange_rvf,
-                            50, mrange, rvfraction=True, normalize=True, 
-                            shadeplot=True, kwargs_script=dict(logscaling=False),
-                            kwargs_plot=dict(color="black"))
+
+    ax1.hlines(1.0, 0.1, 1.0, color="tab:blue", label="Dark Matter Only", **KWARGS_DEF_PLOT)
+ 
 
     plot_spatial_cum_ratio(fig,ax1, filecg, filend, rrange_rvf,
                             50, mrange, rvfraction=True, normalize=True, 
-                            shadeplot=True, kwargs_script=dict(logscaling=False),
-                            kwargs_plot=dict(color="black"), nsigma=2)
+                            shadeplot=True,
+                            kwargs_script=dict(logscaling=False),
+                            kwargs_shade=dict(label="Scatter"),
+                            kwargs_plot=dict(color="black", label=r"Central Galaxy ($10^{11.4} M_\odot)$"))
 
-    ax1.hlines(1.0, 0.1, 1.0, color="tab:blue", linestyles="dashed", **KWARGS_DEF_PLOT)
+    plot_spatial_cum_ratio(fig,ax1, filecg, filend, rrange_rvf,
+                            50, mrange, rvfraction=True, normalize=True, 
+                            shadeplot=True, 
+                            kwargs_script=dict(logscaling=False),
+                            kwargs_plot=dict(color="black"),
+                            nsigma=2)
+
 
     ax1.set_xlabel(r"$r / r_{v, host}$")
     ax1.set_ylabel(r"$N( < r/r_{v,host})_{ratio}$")
     
     ax1.set_xlim(0.1,1)
+    ax1.set_ylim(0,2.1)
+
+    ax1.legend()
 
     savefig(fig,figname + ".pdf")
     savefig(fig,figname + ".png")

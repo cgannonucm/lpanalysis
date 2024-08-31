@@ -60,5 +60,9 @@ def set_plot_defaults():
 def savefig(fig, name):
     fig.savefig(path.join(PATH_OUT,PATH_PLOTS,name), bbox_inches="tight")
 
+def savefig_pngpdf(fig, name):
+    savefig(fig,name + ".png")
+    savefig(fig,name + ".pdf")
+
 def savedf(df, name):
     df.to_csv(path.join(PATH_OUT,PATH_CSV,name), index=False)

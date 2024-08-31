@@ -33,7 +33,6 @@ from gstk.common.util import ifisnone
 
 from plotting_util import *
 
-
 def nfw_profile(r, rs, p0):
     x = r / rs
     return p0 / x / (1 + x)**2
