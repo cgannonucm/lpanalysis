@@ -1,8 +1,10 @@
+import h5py
 import matplotlib as mpl 
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 import os.path as path
 import matplotlib.patheffects as pe
+from subscript.macros import macro_write_out_hdf5
 
 
 KWARGS_DEF_PLOT = dict(linewidth=5)
@@ -15,6 +17,7 @@ KWARGS_DEF_FILL = dict(zorder=1, alpha=0.5, color="tab:orange")
 PATH_OUT = "out"
 PATH_PLOTS = "plots"
 PATH_CSV = "csv"
+PATH_HDF5 = "hdf5"
 
 PARAM_DEF_RRANGE_RVF = (0.015, 1)
 PARAM_DEF_MRANGE = (1E8, 1E9)
@@ -28,9 +31,6 @@ PARAM_KEY_N_PROJ_INFALL_SCATTER = "n_(projected,sd) 1.00E-02[MPC] < r_2d < 2.00E
 
 KEY_DEF_HALOMASS = "TreeMass [M_sol]"
 KEY_DEF_Z = "z"
-
-
-
 
 def set_plot_defaults():
     path_fonts = "/home/charles/research/lensing_perspective_accompaniment/fonts"
@@ -66,3 +66,7 @@ def savefig_pngpdf(fig, name):
 
 def savedf(df, name):
     df.to_csv(path.join(PATH_OUT,PATH_CSV,name), index=False)
+
+def savemacro(macro_out, name, notes=None, stamp_date=True):
+    with h5py.File(path.join(PATH_OUT, PATH_HDF5, name), "w") as f:
+        macro_write_out_hdf5(f, macro_out, notes=notes, stamp_date=stamp_date)
