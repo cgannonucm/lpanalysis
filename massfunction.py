@@ -1,312 +1,354 @@
 #!/usr/bin/env python
 
+import h5py
 import numpy as np
 import symlib
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 from scipy.optimize import curve_fit
 from matplotlib.axes import Axes
-from typing import Any
+from typing import Any, Callable
 import os
 
-from gstk.common.constants import GParam, CPhys
-from gstk.util import util_binedgeavg
-from gstk.io import io_importgalout
-from gstk.scripts.common import ScriptProperties, script, NodeSelector
-from gstk.scripts.selection import script_selector_subhalos_valid, script_selector_halos, script_select_nodedata, script_selector_tree, script_selector_annulus
-from gstk.scripts.massfunction import script_massfunction
-from gstk.scripts.meta import script_eachtree
-from gstk.util import TabulatedGalacticusData
+from subscript.scripts.nodes import nodedata
+from subscript.wrappers import freeze, gscript, multiproj
+from subscript.tabulatehdf5 import tabulate_trees
+from subscript.scripts.histograms import massfunction, bin_avg
+from subscript.scripts.nfilters import nfilter_most_massive_progenitor, nfilter_subhalos_valid, nfilter_project2d, nfand
+from subscript.defaults import ParamKeys
 
-from plotting_util import *
-from symutil import symphony_to_galacticus_dict
+from plotting_util import KWARGS_DEF_ERR, KWARGS_DEF_FILL, KWARGS_DEF_PLOT, plot_histogram, savefig_pngpdf, set_plot_defaults
+from symutil import symphony_to_galacticus_dict, symphony_to_galacticus_hdf5
 
-
-@script(**ScriptProperties.KEY_KWARG_DEF)
-def script_massfunction2(data:TabulatedGalacticusData, selector_function:NodeSelector,
-                         mrange:tuple[int,int], bincount:int, normalize_treecount=False, normalize_bin_width = True,
-                         bin_logspace=True, useratio=False, key_mass=None, **kwargs): 
-    """Improved massfunction script. Use instead of script mass function, by default does not normalize histogram to number of trees"""
-    mass = script_select_nodedata(data, selector_function, [key_mass])[0]
-
-    if useratio:
-        pass
-        #mh = script_select_nodedata(data, selector_function & , [key_mass])[0] 
-        #mass /= 
-
-    bins = np.geomspace(*mrange, bincount) if bin_logspace else np.linspace(*mrange, bincount)
-
-    node_n, node_m = np.histogram(mass, bins=bins) 
-
-
-
-def Compute_SHMF_N_body_Symphony(folder, halo, iSnap, binMin, binMax, binCount=20,    \
-                                 withinRvirOnly=True, useRatio=True, useLogBins=True, \
-                                 usePeakMass=False):
-    # iSanp         : select the i-th snapshot of the simulations
-    # withinRvirOnly: include only the subhalos with the host's virial radius
-    # useRatio      : compute the subhalo mass function in terms of the mass ratio M_sub/M_host
-    # useLogBins    : use logarithmic bins
-    # usePeakMass   : use peak mass (infall mass) instead of the bound mass
-
-    sim_dir     = folder+halo
+def plot_massfunction(
+                        fig, 
+                        ax:Axes, 
+                        gout, 
+                        bins=None, 
+                        range=None,
+                        nfilter=None,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=False,  
+                        plot_ratio = False,
+                        error_plot=False,
+                        projection=False,
+                        scale_x = 1.0,
+                        scale_y = 1.0,
+                        nsigma = 1,
+                        kwargs_plot=None,
+                        kwargs_fill=None,
+                        kwargs_script=None,
+                       ):
     
-    h, hist     = symlib.read_subhalos(folder+halo)
-    params      = symlib.simulation_parameters(sim_dir)
-    hubble      = params['H0']/100.0
-    Mp          = params['mp']/hubble
+    _, mbins = np.histogram((1, ), bins=bins, range=range)
+    nfitler_def = freeze(nfilter_subhalos_valid, mass_min=mbins[0], mass_max=mbins[-1], key_mass=key_mass)
+    _nfilter = nfitler_def if nfilter is None else nfilter
     
-    Mhost       = h['mvir' ][0 ,iSnap]/hubble
-    RvirHost    = h['rvir' ][0 ,iSnap]/hubble/1.0e3
-    posHost     = h['x'    ][0 ,iSnap]/hubble/1.0e3
-    posSub      = h['x'    ][1:,iSnap][h['ok'][1:,iSnap]]/hubble/1.0e3
-    MboundSub   = h['mvir' ][1:,iSnap][h['ok'][1:,iSnap]]/hubble
-    # Maximum mass of subahlo in the history (treated as infall mass in Galacticus).
-    MpeakSub    = hist['mpeak'][1:][h['ok'][1:,iSnap]]/hubble
+    @gscript
+    def _mf(gout, **kwargs):
+        mf, mf_bins = massfunction(gout, key_mass=key_mass, bins=bins, range=range, **kwargs)
+        _hist, _bins = mf, mf_bins
+        if plot_dndlnm:
+            _hist = mf * bin_avg(mf_bins)
+        if plot_ratio:
+            mh = nodedata(gout, key=ParamKeys.mass_basic, nfilter=nfilter_most_massive_progenitor, summarize=True) 
+            _bins = mf_bins / mh
+        return _hist, _bins
     
-    #print(RvirHost)
+    return plot_histogram(
+                          fig, 
+                          ax, 
+                          gout,
+                          get_histogram=_mf,
+                          nfilter=_nfilter,
+                          nsigma=nsigma,                       
+                          error_plot=error_plot,
+                          scale_x=scale_x,
+                          scale_y=scale_y,
+                          projection=projection,
+                          kwargs_script=kwargs_script, 
+                          kwargs_plot=kwargs_plot,
+                          kwargs_fill=kwargs_fill
+                         )
+
+def plot_massfunction_ratio(
+                            fig, 
+                            ax:Axes, 
+                            gout_numerator, 
+                            gout_denominator,
+                            bins=None, 
+                            range=None,
+                            nfilter=None,
+                            key_mass=ParamKeys.mass_bound,
+                            plot_ratio=False,
+                            projection=False,
+                            kwargs_plot=None,
+                            kwargs_script=None,
+                       ):
+    kwargs_script = {} if kwargs_script is None else kwargs_script
     
-    # Distance to the host center
-    Distance    = np.sqrt(np.sum((posSub-posHost[None,:])**2, axis=1))
+    _, mbins = np.histogram((1, ), bins=bins, range=range)
+    nfitler_def = freeze(nfilter_subhalos_valid, mass_min=mbins[0], mass_max=mbins[-1], key_mass=key_mass)
+    _nfilter = nfitler_def if nfilter is None else nfilter
     
-    if (withinRvirOnly):
-        indexSelect = np.logical_and(Distance > 0.0, Distance <= RvirHost)
-    else:
-        indexSelect =                Distance > 0.0
-    
-    if (usePeakMass):
-        MsubSelect  = MpeakSub[indexSelect]
-    else:
-        MsubSelect  = MboundSub[indexSelect]
-    
-    if (useRatio):
-        MsubSelect = MsubSelect/Mhost
-    
-    # Check whether to use logarithmic bin.
-    if (useLogBins):
-        massBins   = np.geomspace(binMin, binMax, binCount+1)
-        binCenter  = np.sqrt(massBins[:-1]*massBins[1:])
-    else:
-        massBins   = np.linspace (binMin, binMax, binCount+1)
-        binCenter  = 0.5*(massBins[:-1]+massBins[1:])
+    @gscript
+    def _mf(gout, **kwargs):
+        mf, mf_bins = massfunction(gout, key_mass=key_mass, bins=bins, range=range, **kwargs)
+        _hist, _bins = mf, mf_bins
+        if plot_ratio:
+            mh = nodedata(gout, key=ParamKeys.mass_basic, nfilter=nfilter_most_massive_progenitor, summarize=True) 
+            _bins = mf_bins / mh
+        return _hist, _bins
 
-    hist, binEdge = np.histogram(MsubSelect,bins=massBins,range=(binMin,binMax))
-    binWidth      = massBins[1:]-massBins[:-1]
-    hist          = hist/binWidth
-
-    return binCenter, hist
-
-def massfunction_symphony_dir(haloFolder, bincount, mrange, withinRvirOnly=True,useRatio=False, useLogBins=True,usePeakMass=False):
-    haloNames  = os.listdir(haloFolder)
-    NHostNbody = len(haloNames)
-
-    M_sub_Nbody         = np.zeros((NHostNbody, bincount))
-    dNdM_sub_Nbody      = np.zeros((NHostNbody, bincount))
-
-    for iH in range(NHostNbody):
-        M_sub_Nbody[iH], dNdM_sub_Nbody[iH] = Compute_SHMF_N_body_Symphony(                                    
-                                                                            haloFolder, haloNames[iH], -1,      
-                                                                            binMin=mrange[0], binMax=mrange[1],     
-                                                                            binCount=bincount,                     
-                                                                            withinRvirOnly=withinRvirOnly,                
-                                                                            useRatio=useRatio,                      
-                                                                            useLogBins=useLogBins,                    
-                                                                            usePeakMass=usePeakMass,                    
-                                                                    )
-    return M_sub_Nbody, dNdM_sub_Nbody
-
-def plot_massfunction(fig, ax, data, mrange, bincount, selector_function=None, plot_kwargs=None,
-                        script_kwargs=None, plot_dndlnm=False, useratio = True):
-    plot_kwargs = {} if plot_kwargs is None else plot_kwargs
-    script_kwargs = {} if script_kwargs is None else script_kwargs
-    selector_function = script_selector_subhalos_valid if selector_function is None else selector_function
-
-
-    mhost = np.mean(script_select_nodedata(data,script_selector_halos, [GParam.MASS_BASIC])[0])
-
-    mrange_scale = 1
-    if useratio:
-        mrange_scale = mhost
-
-    _mrange = np.asarray(mrange) * mrange_scale
-
-    hist, mbins = script_massfunction(data, selector_function=selector_function,mrange=_mrange,bincount=bincount, **script_kwargs)
-
-    plotx = util_binedgeavg(mbins) / mrange_scale
-
-    ploty = hist
-
-    if plot_dndlnm:
-        ploty = hist * util_binedgeavg(mbins)
-
-
-    ax.plot(plotx, ploty, **(KWARGS_DEF_PLOT | plot_kwargs))
-
-def plot_massfunction_scatter(fig, ax:Axes, data, mrange, bincount, selector_function=None, plot_kwargs=None,
-                                script_kwargs=None, plot_dndlnm=False, useratio = True, error_plot=False, 
-                                factor=1, nsigma = 1):
-
-    plot_kwargs = {} if plot_kwargs is None else plot_kwargs
-    script_kwargs = {} if script_kwargs is None else script_kwargs
-    selector_function = script_selector_subhalos_valid if selector_function is None else selector_function
-
-    mhost = np.mean(script_select_nodedata(data,script_selector_halos, [GParam.MASS_BASIC])[0])
-
-    mrange_scale = 1
-
-    if useratio:
-        mrange_scale = mhost
-
-    _mrange = np.asarray(mrange) * mrange_scale
-
-    sub_dndm, sub_m = script_eachtree(data, script=script_massfunction, 
-                          selector_function=selector_function, mrange=_mrange, 
-                          bincount=bincount,normalize_treecount=False, **script_kwargs)
-    
-    sub_dndm, sub_m = np.asarray(sub_dndm), np.asarray(sub_m) 
-
-    sub_m, sub_dndm_avg, sub_dndm_std = np.mean(sub_m, axis=0), np.mean(sub_dndm, axis=0), np.std(sub_dndm, axis=0)
-
-    plotx = util_binedgeavg(sub_m) / mrange_scale
-
-    ploty, ploty_std = sub_dndm_avg * factor, sub_dndm_std * factor
-
-    if plot_dndlnm:
-        ploty       = sub_dndm_avg * util_binedgeavg(sub_m) * factor
-        ploty_std   = sub_dndm_std * util_binedgeavg(sub_m) * factor * nsigma
-
-    ploty_min, ploty_max = ploty - ploty_std, ploty + ploty_std
-
-    if error_plot:
-        ax.errorbar(plotx, ploty, ploty_std, **(KWARGS_DEF_ERR | plot_kwargs))
-        return 
-
-    ax.fill_between(plotx, ploty_min, ploty_max, **(KWARGS_DEF_FILL | plot_kwargs))
-
-
-def plot_massfunction_symphony(fig, ax:Axes, haloFolder, bincount, mrange,
-                                withinRvirOnly=True,useRatio=False, useLogBins=True,usePeakMass=False,
-                                plot_kwargs=None, plot_dnlnm = False, mhost=1E13):
-    plot_kwargs = {} if plot_kwargs is None else plot_kwargs
-
-    mrange_scale = 1
-    if useRatio:
-        mrange_scale = mhost
-
-    _mrange = np.asarray(mrange) * mrange_scale   
-
-    M_sub_Nbody, dNdM_sub_Nbody = massfunction_symphony_dir(haloFolder, bincount, _mrange, withinRvirOnly,False, useLogBins,usePeakMass)
-
-    plot_x, plot_y, plot_y_std = np.mean(M_sub_Nbody,axis=0), np.mean(dNdM_sub_Nbody,axis=0), np.std(dNdM_sub_Nbody,axis=0) 
-    
-    if plot_dnlnm:
-        plot_x, plot_y, plot_y_std = np.mean(M_sub_Nbody,axis=0), np.mean(M_sub_Nbody * dNdM_sub_Nbody,axis=0), np.std(M_sub_Nbody * dNdM_sub_Nbody,axis=0) 
-
-    if useRatio:
-        plot_x = plot_x / mrange_scale
-
-    ax.errorbar(plot_x,plot_y,plot_y_std, **(KWARGS_DEF_ERR | plot_kwargs))
-
-
+    _get_hist = multiproj(_mf, nfilter) if projection else freeze(_mf, nfilter=nfilter)
+    mf, _     = _get_hist(gout_denominator, summarize=True, **kwargs_script)    
+ 
+    return plot_massfunction(
+                             fig, 
+                             ax, 
+                             gout_numerator,
+                             bins=bins,
+                             range=range,
+                             nfilter=_nfilter,
+                             error_plot=False,
+                             plot_dndlnm=False,
+                             plot_ratio=plot_ratio,
+                             projection=projection,
+                             kwargs_script=kwargs_script, 
+                             kwargs_plot=kwargs_plot,
+                             kwargs_fill=dict(
+                                               visible=False
+                                             ),
+                             scale_y=1 / mf,
+                            )   
+        
 def main():
     fname = "massfunction"
     path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5" 
     path_symphony = "data/symphony/SymphonyGroup/"
 
-    filend = io_importgalout(path_file)[path_file] 
-    mres = 1E9
+    gout_nd = tabulate_trees(h5py.File(path_file))
 
-    #script_test(filend)
-    
-    sym_nodedata = symphony_to_galacticus_dict(path_symphony, iSnap=203)
+    #script_test(filend) 
+    #sym_nodedata = symphony_to_galacticus_dict(path_symphony, iSnap=203) 
+    sym_hdf5 = symphony_to_galacticus_hdf5(path_symphony, iSnap=203)
 
+    rap_in, rap_out = 0, 5E-2
     plot_dndlnm = True
-    useratio = True
+    plot_ratio  = True
 
-    scale = 1E13
+    bins_symphony   = np.logspace(9, 13, 20)
+    bins_galacticus = np.logspace(8, 13, 30)  
 
-    if useratio:
-        scale = 1
+    xlim = 1E-5, 1E0
+    ylim_ratio = 0, 2
+
+    nfilter_subh = freeze(nfilter_subhalos_valid, mass_min=1E8, mass_max=1E13, key_mass=ParamKeys.mass_bound)
+    nfilter_proj = freeze(nfilter_project2d, rmin=rap_in, rmax=rap_out)
+    nfilter_proj_subh = nfand(nfilter_subh, nfilter_proj)
     
-    mrange = np.asarray((1E8 / 1E13,1)) * scale
-    mrange_sym = np.asarray((mres / 10**(13.0), 1)) * scale
-    bincount = 20    
+    proj_norm_vectors = np.identity(3)
+    kwargs_script_proj = dict(normvector=proj_norm_vectors)
+    area_ap = np.pi * (rap_out**2 - rap_in**2)
 
+    # style 
+    color_gal_fill            = "tab:orange"
+    color_gal_plot            = "tab:orange"
+    color_gal_plot_foreground = "black"
+    color_sym_plot            = "tab:blue"
+
+    kwargs_gal_plot = dict(
+                            color=color_gal_plot,
+                            path_effects=[pe.Stroke(linewidth=8, foreground=color_gal_plot_foreground), pe.Normal()]                    
+                          )
+    
     set_plot_defaults()
 
-    fig, axs = plt.subplots(ncols = 2, figsize=(18,6))
-    ax0, ax1 = axs
+    fig, axs = plt.subplots(figsize=(18,12), ncols = 2, nrows=2)
+    ax0, ax1 = axs[0]
+    ax2, ax3 = axs[1]
 
-    # ax 0 
+    for ax in axs.flatten():
+        ax.set_xlim(*xlim)
 
-    plot_massfunction_scatter(fig, ax0, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio,
-                                plot_kwargs=dict(label="Symphony", zorder=2), 
-                                error_plot=True)   
+    # ax0
+    plot_massfunction(
+                        fig, 
+                        ax0, 
+                        gout_nd,
+                        bins=bins_galacticus,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nfilter=nfilter_subh,
+                        kwargs_plot=(kwargs_gal_plot |  dict(label="Galacticus")),
+                        kwargs_fill=dict(
+                                         color=color_gal_fill
+                                        )
+                       )
 
-    plot_massfunction(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio, 
-                                plot_kwargs=dict(label="Galacticus", color="black", zorder=3))
 
-    plot_massfunction_scatter(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio,
-                                plot_kwargs=dict(zorder=1))
+    plot_massfunction(
+                        fig, 
+                        ax0, 
+                        gout_nd,
+                        bins=bins_galacticus,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nsigma=2,
+                        nfilter=nfilter_subh,
+                        kwargs_plot=dict(                                            
+                                            visible=False
+                                        ),
+                        kwargs_fill=dict(
+                                         color=color_gal_fill
+                                        )                       
+                       )
 
-    plot_massfunction_scatter(fig, ax0, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio, nsigma=2,
-                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1))
-
-
+    plot_massfunction(
+                        fig, 
+                        ax0, 
+                        sym_hdf5,
+                        bins=bins_symphony, 
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,                        
+                        plot_ratio=plot_ratio,
+                        error_plot=True,
+                        nfilter=nfilter_subh,
+                        kwargs_plot=dict(
+                                            color=color_sym_plot,
+                                            label="Symphony"
+                                        )                             
+                       )
 
     ax0.loglog()
-
-    ax0.set_xlabel(r"$m / M_{h}$")
-    ax0.set_ylabel(r"$\frac{dN}{d\ln m}$")
-
+    
+    ax0.set_xlabel(r"$m / M_h$")
+    ax0.set_ylabel(r"$\frac{dN}{d \ln m}$")
     ax0.legend()
 
 
     # ax 1
+    plot_massfunction(
+                        fig, 
+                        ax1, 
+                        gout_nd,
+                        bins=bins_galacticus,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nfilter=nfilter_proj_subh,
+                        projection=True,
+                        kwargs_script=kwargs_script_proj,
+                        scale_y=1/area_ap,
+                        kwargs_plot=kwargs_gal_plot,
+                        kwargs_fill=dict(
+                                            color=color_gal_fill
+                                       ) 
+                       )  
 
-    kwargs_select_inner = dict(
-                                    selector_function = lambda d, **k: script_selector_subhalos_valid(d, **k) & script_selector_annulus(d, **k), 
-                                    script_kwargs = dict(
-                                            r0 = 0,
-                                            r1 = 5E-2
-                                    )  
-                               )
+    plot_massfunction(
+                        fig, 
+                        ax1, 
+                        gout_nd,
+                        bins=bins_galacticus,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nsigma=2,
+                        nfilter=nfilter_proj_subh,
+                        projection=True,
+                        kwargs_script=kwargs_script_proj,
+                        scale_y=1/area_ap,
+                        kwargs_plot=dict(
+                                            visible=False                                            
+                                        ),
+                        kwargs_fill=dict(
+                                            color=color_gal_fill
+                                        )  
+                       )
 
-    plot_massfunction_scatter(fig, ax1, sym_nodedata, mrange_sym, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio,
-                                plot_kwargs=dict(label="Symphony", zorder=2), 
-                                error_plot=True, **kwargs_select_inner)   
+    plot_massfunction(
+                        fig, 
+                        ax1, 
+                        sym_hdf5,
+                        bins=bins_symphony, 
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,                        
+                        plot_ratio=plot_ratio,
+                        error_plot=True,
+                        nfilter=nfilter_proj_subh,
+                        projection=True,
+                        kwargs_script=kwargs_script_proj,
+                        scale_y=1/area_ap,
+                        kwargs_plot=dict(
+                                            color=color_sym_plot
+                                        )
+                       )
 
-    plot_massfunction(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio,
-                                plot_kwargs=dict(label="Galacticus", color="black", zorder=3),
-                                **kwargs_select_inner)
-
-    plot_massfunction_scatter(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio,
-                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1),
-                                **kwargs_select_inner)
-
-    plot_massfunction_scatter(fig, ax1, filend, mrange, bincount, plot_dndlnm=plot_dndlnm, 
-                                useratio=useratio, nsigma=2,
-                                plot_kwargs=dict(label="Galacticus (scatter)", zorder=1), 
-                                **kwargs_select_inner)
+    ax1.set_xlabel(r"$m / M_h$")
+    ax1.set_ylabel(r"$\frac{d^2 N}{d \ln m dA}$ [kpc$^{-2}$]")
 
     ax1.loglog()
 
-    ax1.set_xlabel(r"$m / M_{h}$")
-    ax1.set_ylabel(r"$\frac{dN}{d\ln m}$")
+    # ax2
+    ax2.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | kwargs_gal_plot))
+
+    plot_massfunction_ratio(
+                            fig, 
+                            ax2, 
+                            sym_hdf5,
+                            gout_nd,
+                            bins=bins_symphony,
+                            key_mass=ParamKeys.mass_bound,
+                            plot_ratio=plot_ratio,
+                            nfilter=nfilter_subh,
+                            kwargs_plot=dict(
+                                             color=color_sym_plot
+                                            )
+                           ) 
+    ax2:Axes = ax2
+    
+    ax2.set_xscale("log") 
+    ax2.set_xlim(1E-5, 1E0)
+    ax2.set_ylim(*ylim_ratio)
+    ax2.set_xlabel("$M / M_h$")
+    ax2.set_ylabel("ratio")
+ 
+
+    #ax3
+    ax3.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | kwargs_gal_plot))
+
+    plot_massfunction_ratio(
+                            fig, 
+                            ax3, 
+                            sym_hdf5,
+                            gout_nd,
+                            bins=bins_symphony,
+                            key_mass=ParamKeys.mass_bound,
+                            plot_ratio=plot_ratio,
+                            nfilter=nfilter_proj_subh,
+                            projection=True,
+                            kwargs_script=kwargs_script_proj,                       
+                            kwargs_plot=dict(
+                                             color=color_sym_plot
+                                            )
+                           )     
+    ax3.set_xscale("log") 
+    ax3.set_xlim(1E-5, 1E0)
+    ax3.set_ylim(*ylim_ratio)
 
 
-
-    savefig(fig, fname + ".png")
-    savefig(fig, fname + ".pdf")
-
+    ax3.set_xlabel("$M / M_h$")
+    ax3.set_ylabel("ratio (inner 50kpc)")
 
 
+    savefig_pngpdf(fig, fname)
 
 if __name__ == "__main__":
     main()
