@@ -74,4 +74,3 @@ def fit_profile_han(file, rrange_rvf, rbins, mrange, kwargs_script_spatial = Non
     fitY = np.log10(ratio)
 
     return LinearRegression().fit(fitX, fitY,sample_weight=1/err**2)
-

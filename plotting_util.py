@@ -7,6 +7,7 @@ from matplotlib.axes import Axes
 import os.path as path
 import matplotlib.patheffects as pe
 from typing import Callable
+import logging
 
 from subscript.macros import macro_write_out_hdf5
 from subscript.wrappers import multiproj, freeze
@@ -35,8 +36,24 @@ PARAM_KEY_N_PROJ_BOUND_SCATTER = "n_(projected,sd) 1.00E-02[MPC] < r_2d < 2.00E-
 PARAM_KEY_N_PROJ_INFALL = "n_projected 1.00E-02[MPC] < r_2d < 2.00E-02[MPC] 1.0E+08 < M < 1.0E+09 mass_infall"
 PARAM_KEY_N_PROJ_INFALL_SCATTER = "n_(projected,sd) 1.00E-02[MPC] < r_2d < 2.00E-02[MPC] 1.0E+08 < M < 1.0E+09 mass_infall"
 
-KEY_DEF_HALOMASS = "TreeMass [M_sol]"
-KEY_DEF_Z = "z"
+KEY_DEF_HALOMASS = "halo mass (mean)/out0"
+KEY_DEF_Z = "z (mean)/out0"
+
+class PlotStyling():
+    color_gal_fill            = "tab:orange"
+    color_gal_fill2           = "tab:purple"
+    color_gal_fill_unevo      = "tab:red"
+    color_gal_um              = "tab:green"
+
+    color_gal_plot            = "tab:orange"
+    color_gal_plot_foreground = "black"
+    color_sym_plot            = "tab:blue"
+
+    kwargs_gal_plot = dict(
+                            color=color_gal_plot,
+                            path_effects=[pe.Stroke(linewidth=8, foreground=color_gal_plot_foreground), pe.Normal()]                    
+                          )
+ 
 
 def set_plot_defaults():
     path_fonts = "/home/charles/research/lensing_perspective_accompaniment/fonts"
@@ -76,6 +93,18 @@ def savedf(df, name):
 def savemacro(macro_out, name, notes=None, stamp_date=True):
     with h5py.File(path.join(PATH_OUT, PATH_HDF5, name), "w") as f:
         macro_write_out_hdf5(f, macro_out, notes=notes, stamp_date=stamp_date)
+
+def getlogger(fname):
+    logger = logging.getLogger()
+    logging.basicConfig(
+                        filename=path.join("out/logs/", fname),
+                        level=logging.INFO
+                       )
+    logger.setLevel(logging.INFO)
+
+    logger.info("----------------------------------")
+    
+    return logger
 
 def plot_scatter(fig                                          , ax:Axes                              , gout: h5py.File                                 , 
                  toplot_x   : (str | Callable)                , toplot_y   : (str | Callable)        , nfilter_x       : (np.ndarray | Callable)       , 

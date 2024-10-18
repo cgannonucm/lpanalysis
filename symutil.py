@@ -1,14 +1,14 @@
-
 #!/usr/bin/env python
-
 import numpy as np
 import symlib
 import os.path
 import os
 import pickle
 from zlib import adler32
+import tempfile
 
-from gstk.common.constants import GParam, CPhys
+
+from subscript.defaults import ParamKeys
 from plotting_util import *
 
 
@@ -58,32 +58,32 @@ def symphony_to_galacticus_dict(haloFolder:str, iSnap=-1, cache=True,  path_cach
         YRel = np.insert(YRel, 0, 0)
         ZRel = np.insert(ZRel, 0, 0)
 
-        out[GParam.X] = XRel
-        out[GParam.Y] = YRel
-        out[GParam.Z] = ZRel
+        out[ParamKeys.x] = XRel
+        out[ParamKeys.y] = YRel
+        out[ParamKeys.z] = ZRel
 
         out["coordinates"] = np.asarray((XRel, YRel, ZRel)).T
 
         # Bound (peak) mass
         MpeakSub = np.insert(MpeakSub, 0, Mhost)
-        out[GParam.MASS_BASIC] = MpeakSub
+        out[ParamKeys.mass_basic] = MpeakSub
 
         # Bound mass
         MboundSub = np.insert(MboundSub, 0, Mhost)
-        out[GParam.MASS_BOUND] = MboundSub
+        out[ParamKeys.mass_bound] = MboundSub
 
         # virial radius
         RVirSub = np.insert(RVirSub, 0, RvirHost)
-        out[GParam.RVIR] = RVirSub
+        out[ParamKeys.rvir] = RVirSub
 
         # Is isolated
         isisolated = np.zeros(nsub)
         isisolated = np.insert(isisolated, 0, 1)
-        out[GParam.IS_ISOLATED] = isisolated
+        out[ParamKeys.is_isolated] = isisolated
 
         zlastiso = -1 * np.ones(nsub + 1)
         zlastiso[0] = snapz
-        out[GParam.Z_LASTISOLATED] = zlastiso
+        out[ParamKeys.z_lastisolated] = zlastiso
 
         return out
     
@@ -118,3 +118,38 @@ def symphony_to_galacticus_dict(haloFolder:str, iSnap=-1, cache=True,  path_cach
 
     return out
 
+
+def symphony_to_galacticus_hdf5(haloFolder:str, iSnap=-1, 
+                                    cache=True, path_cache="cache", 
+                                    hdf5_file=None):
+    """Create a hdf5 file in Galacticus format"""                                
+    sym_out = symphony_to_galacticus_dict(haloFolder=haloFolder, iSnap=iSnap, cache=cache, path_cache=path_cache)
+
+    if hdf5_file is None:
+        tf = tempfile.TemporaryFile()
+        hdf5_file =  h5py.File(tf, "r+")
+
+    gout   = hdf5_file.create_group(f"Outputs/Output1")
+    gndata = hdf5_file.create_group(f"Outputs/Output1/nodeData")
+
+    for key, val in sym_out.items():
+        gndata.create_dataset(key, data=val)
+
+    KEY_TREE_START     = "tree_start"
+    KEY_TREE           = "custom_node_tree"       
+
+    KEY_GAL_TREE_COUNT = "mergerTreeCount"
+    KEY_GAL_TREE_INDEX = "mergerTreeIndex"
+    KEY_GAL_TREE_START = "mergerTreeStartIndex"
+
+    tree_index = sym_out[KEY_TREE] 
+    tree_index_unique = np.unique(tree_index)
+
+    treecount = np.asarray([np.sum(tree_index == key_tree) for key_tree in tree_index_unique])
+    tree_start = np.insert(np.cumsum(treecount)[:-1], 0, 0)
+
+    gout.create_dataset(KEY_GAL_TREE_COUNT, data=treecount)
+    gout.create_dataset(KEY_GAL_TREE_INDEX, data=tree_index_unique)
+    gout.create_dataset(KEY_GAL_TREE_START, data=tree_start)
+
+    return hdf5_file

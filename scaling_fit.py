@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import h5py
 import numpy as np
 from scipy import integrate
 from colossus.halo import concentration, mass_so
@@ -14,44 +15,23 @@ from matplotlib import font_manager
 from matplotlib.axes import Axes
 from typing import Any
 import os.path as path
-
-from gstk.util import util_tabulate
-from gstk.hdf5util import read_dataset
-from gstk.common.constants import GParam, CPhys
-from gstk.util import util_binedgeavg
-from gstk.io import csv_cacheable, io_importgalout, io_import_directory
-from gstk.scripts.common import ScriptProperties, script, NodeSelector, TabulatedGalacticusData
-from gstk.scripts.spatial import script_rvir_halos, script_dnda_with_error, script_dndv_with_error, script_dndv
-from gstk.scripts.selection import script_selector_subhalos_valid, script_selector_halos, script_select_nodedata, script_selector_tree, script_selector_annulus
-from gstk.scripts.massfunction import script_massfunction
-from gstk.macros.common import MacroScalingKeys
-from gstk.macros.scaling import macro_scaling_filemassz
-from gstk.scripts.sigmasub import sigsub_var_M0, sigsub_var_sigma_sub, sigsub_var_N0, sigsub_var_M_extrap
-from gstk.macros.common import macro_combine, macro_run
-from gstk.macros.scaling import macro_scaling_projected_annulus
-from gstk.common.util import ifisnone
 from astropy.cosmology import FlatLambdaCDM
 from typing import Iterable
 import pandas as pd
 from colossus.lss import mass_function
 from numpy.dtypes import StrDType
 
-from spatial_ratio import script_nfw_ratio_with_error
-from interp_tstripped import galacticus_interp_tstripped
 from plotting_util import *
+from summary import HDF5Wrapper
 
-def import_csv(path_file):
-    @csv_cacheable(fpath=path_file,refresh=False)
-    def load():
-        pass
-    return load()  
 
-def scaling_fit_mhz(data, key_mh, key_z, key_tofit, scale = 1, mscale = 1E13, zshift = 0.5):
-    mh,z,tofit = data[key_mh], data[key_z], data[key_tofit] * scale
+def scaling_fit_mhz(data, key_mh, key_z, key_tofit, scale = 1, mscale = 1E13, zshift = 0.5,filter=None):
+    filter = np.ones(data[key_mh].shape, dtype=bool) if filter is None else filter
+    mh,z,tofit = data[key_mh][filter], data[key_z][filter], data[key_tofit][filter] * scale
     fitX = np.log10(np.transpose(np.array((mh / mscale,z + zshift))))
     return LinearRegression().fit(fitX,np.log10(tofit)) 
 
-def scaling_fit_mhz_def(data, rannulus = None, key_n_proj = None, key_mass = None, key_z = None):
+def scaling_fit_mhz_def(data, rannulus = None, key_n_proj = None, key_mass = None, key_z = None, filter=None):
     # Hard coded values for .csv currently used
     key_n_proj = PARAM_KEY_N_PROJ_BOUND if key_n_proj is None else key_n_proj
     key_mass = KEY_DEF_HALOMASS if key_mass is None else key_mass
@@ -61,9 +41,9 @@ def scaling_fit_mhz_def(data, rannulus = None, key_n_proj = None, key_mass = Non
     r0, r1 = rannulus 
     area = np.pi * (r1**2 - r0**2)
 
-    return scaling_fit_mhz(data, key_mass, key_z, key_n_proj, 1/area)
+    return scaling_fit_mhz(data, key_mass, key_z, key_n_proj, 1/area, filter=filter)
  
-def fits_to_df(fits:dict[str,LinearRegression]):
+def fits_to_df(fits:dict[str,LinearRegression])->pd.DataFrame:
     l = len(fits)
 
     out_dict = {}
@@ -181,11 +161,8 @@ def scaling_fit_han_model(rannulus, mh_space:np.ndarray, z_space:np.ndarray, cos
 
     return scaling_fit_mhz(scaling_dict, KEY_DEF_HALOMASS, KEY_DEF_Z, KEY_SCALE, norm,mscale,zshift)
 
-
-
 def nfw_mproj(m_halo,z,r_ap, cosmo):
-
-    rvir = mass_so.M_to_R(m_halo * cosmo.h,z,"vir") * CPhys.KPC_TO_MPC / cosmo.h
+    rvir = mass_so.M_to_R(m_halo * cosmo.h,z,"vir") / 1E3 / cosmo.h
     c = concentration.concentration(m_halo * cosmo.h, "vir", z, model = 'diemer19')
     r = r_ap / rvir
 
@@ -219,7 +196,7 @@ def scaling_nfw(rannulus, mh_space:np.ndarray, z_space:np.ndarray, cosmo,mscale=
     fscale_0 = nfw_scale_annulus(rannulus,mscale,zshift,cosmo,alpha)
     
     for n, (m,z) in enumerate(zip(mh_flat,z_flat)):
-        fscale[n] = nfw_scale_annulus(rannulus,m, z,cosmo,alpha) / fscale_0
+        fscale[n] = nfw_scale_annulus(rannulus, m, z, cosmo,alpha) / fscale_0
 
     return mh_mg, z_mg, fscale.reshape(mh_mg.shape)
 
@@ -237,47 +214,66 @@ def main():
     path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
     path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
 
+    path_file_hdf5_um = "out/hdf5/scaling_um.hdf5"
+    path_file_hdf5 = "out/hdf5/summary_scaling.hdf5"
+    
+    hdf5_scaling_um = h5py.File(path_file_hdf5_um)
+    hdf5_scaling    = h5py.File(path_file_hdf5)
+    
+    scaling_data_hdf5_um = HDF5Wrapper(hdf5_scaling_um)
+    scaling_data_hdf5 = HDF5Wrapper(hdf5_scaling)
+    #scaling_data    = 
+    
+    key_n_proj_h = "n evolved 0.01 < r_{2d} <= 0.02, 1.00e+08 < m_e < 1.00e+10 (mean)/out0"
+    key_n_proj_infall_h = "n unevolved 0.01 < r_{2d} <= 0.02, 1.00e+08 < m_e < 1.00e+10 (mean)/out0" 
+    key_z_h = "z (mean)/out0"
+    key_mh_h = "halo mass (mean)/out0"
+
     key_n_proj = PARAM_KEY_N_PROJ_BOUND
     key_n_proj_infall = PARAM_KEY_N_PROJ_INFALL
 
-    scaling_data = import_csv(path_csv)
+    scaling_data = pd.read_csv(path_csv)
 
     mh, z = scaling_data[KEY_DEF_HALOMASS], scaling_data[KEY_DEF_Z]
     mh_range = (np.min(mh), np.max(mh))
     z_range = (np.min(z), np.max(z))
 
     mspace = np.geomspace(*mh_range,5)
+
     zspace = np.linspace(*z_range,5)
     rannulus = PARAM_DEF_RANNULUS
 
     cosmo = cosmology.setCosmology("planck18")
 
-    filend = io_importgalout(path_file)[path_file] 
+    filend = h5py.File(path_file)
 
     interp_rrange_rvf = PARAM_DEF_RRANGE_RVF
     interp_rbins = 10
     interp_mrange = PARAM_DEF_MRANGE
 
-    interp_t = galacticus_interp_tstripped(filend, interp_rrange_rvf, interp_rbins, interp_mrange)
+    #interp_t = galacticus_interp_tstripped(filend, interp_rrange_rvf, interp_rbins, interp_mrange)
     
     han_gamma = np.linspace(0.8, 2, 13)
 
     nfw_dict = scaling_nfw_dict(rannulus,mspace,zspace,cosmo)
-
+    
+    _filter_m = scaling_data_hdf5[key_mh_h] > 1E13
 
     fits = {
-                "Galacticus (Unevolved)"        :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj_infall),   
-                "Galacticus (Evolved)"          :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj),
-                "Han (2016) (Gamma Interp)"     :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=(0.94,1.24)),
-                "Han (2016) (Galacticus Interp)":scaling_fit_han_model(rannulus,mspace,zspace,cosmo,fstripped=interp_t),
-                "NFW"                           :scaling_fit_mhz(nfw_dict,KEY_DEF_HALOMASS,KEY_DEF_Z,PARAM_KEY_N_PROJ_INFALL)
+                "Galacticus (Unevolved)"                :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj_infall),   
+                "Galacticus (Evolved)"                  :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj),
+                "Galacticus (UM, Evolved)"              :scaling_fit_mhz_def(scaling_data_hdf5_um, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h),   
+                "Galacticus (Evolved) (new)"            :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h),   
+                "Galacticus (Evolved) (new) m_h > 1E13" :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h, filter=_filter_m),   
+                "Han (2016) (Gamma Interp)"             :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=(0.94,1.24)),
+                #"Han (2016) (Galacticus Interp)"        :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,fstripped=interp_t),
+                "NFW"                                   :scaling_fit_mhz(nfw_dict,KEY_DEF_HALOMASS,KEY_DEF_Z,PARAM_KEY_N_PROJ_INFALL)
         } 
     
     for gamma in han_gamma:
                 label = f"Han et al. (Gamma = {gamma:.1f})" 
                 fits[label] = scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=gamma)
-
-    
+ 
     df = fits_to_df(fits)
 
     savedf(df,fname)

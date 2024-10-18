@@ -17,7 +17,7 @@ from subscript.scripts.histograms import massfunction, bin_avg
 from subscript.scripts.nfilters import nfilter_most_massive_progenitor, nfilter_subhalos_valid, nfilter_project2d, nfand
 from subscript.defaults import ParamKeys
 
-from plotting_util import KWARGS_DEF_ERR, KWARGS_DEF_FILL, KWARGS_DEF_PLOT, plot_histogram, savefig_pngpdf, set_plot_defaults
+from plotting_util import KWARGS_DEF_ERR, KWARGS_DEF_FILL, KWARGS_DEF_PLOT, plot_histogram, savefig_pngpdf, set_plot_defaults, PlotStyling
 from symutil import symphony_to_galacticus_dict, symphony_to_galacticus_hdf5
 
 def plot_massfunction(
@@ -124,10 +124,13 @@ def plot_massfunction_ratio(
         
 def main():
     fname = "massfunction"
-    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5" 
-    path_symphony = "data/symphony/SymphonyGroup/"
 
-    gout_nd = tabulate_trees(h5py.File(path_file))
+    path_nd     = "data/galacticus/um_update/dmo.hdf5" 
+    path_symphony = "data/symphony/SymphonyGroup/"
+    path_um       = "data/galacticus/um_update/umachine.hdf5" 
+
+    gout_nd = tabulate_trees(h5py.File(path_nd))
+    gout_um = tabulate_trees(h5py.File(path_um))
 
     #script_test(filend) 
     #sym_nodedata = symphony_to_galacticus_dict(path_symphony, iSnap=203) 
@@ -137,8 +140,8 @@ def main():
     plot_dndlnm = True
     plot_ratio  = True
 
-    bins_symphony   = np.logspace(9, 13, 20)
-    bins_galacticus = np.logspace(8, 13, 30)  
+    bins_symphony   = np.logspace(9, 13, 10)
+    bins_galacticus = np.logspace(8, 13, 15)  
 
     xlim = 1E-5, 1E0
     ylim_ratio = 0, 2
@@ -151,17 +154,7 @@ def main():
     kwargs_script_proj = dict(normvector=proj_norm_vectors)
     area_ap = np.pi * (rap_out**2 - rap_in**2)
 
-    # style 
-    color_gal_fill            = "tab:orange"
-    color_gal_plot            = "tab:orange"
-    color_gal_plot_foreground = "black"
-    color_sym_plot            = "tab:blue"
 
-    kwargs_gal_plot = dict(
-                            color=color_gal_plot,
-                            path_effects=[pe.Stroke(linewidth=8, foreground=color_gal_plot_foreground), pe.Normal()]                    
-                          )
-    
     set_plot_defaults()
 
     fig, axs = plt.subplots(figsize=(18,12), ncols = 2, nrows=2)
@@ -182,12 +175,30 @@ def main():
                         plot_ratio=plot_ratio,
                         error_plot=False,
                         nfilter=nfilter_subh,
-                        kwargs_plot=(kwargs_gal_plot |  dict(label="Galacticus")),
+                        kwargs_plot=(PlotStyling.kwargs_gal_plot |  dict(label="Galacticus")),
                         kwargs_fill=dict(
-                                         color=color_gal_fill
+                                         color=PlotStyling.color_gal_fill
                                         )
                        )
 
+    plot_massfunction(
+                        fig, 
+                        ax0, 
+                        gout_um,
+                        bins=bins_galacticus,
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nfilter=nfilter_subh,
+                        kwargs_plot=(
+                                     PlotStyling.kwargs_gal_plot | 
+                                     dict(label="Galacticus (Central Galaxy)", color=PlotStyling.color_gal_um)
+                                    ),
+                        kwargs_fill=dict(
+                                         visible=False
+                                        )
+                       )
 
     plot_massfunction(
                         fig, 
@@ -204,7 +215,7 @@ def main():
                                             visible=False
                                         ),
                         kwargs_fill=dict(
-                                         color=color_gal_fill
+                                         color=PlotStyling.color_gal_fill
                                         )                       
                        )
 
@@ -216,12 +227,13 @@ def main():
                         key_mass=ParamKeys.mass_bound,
                         plot_dndlnm=plot_dndlnm,                        
                         plot_ratio=plot_ratio,
-                        error_plot=True,
+                        error_plot=False,
                         nfilter=nfilter_subh,
                         kwargs_plot=dict(
-                                            color=color_sym_plot,
+                                            color=PlotStyling.color_sym_plot,
                                             label="Symphony"
-                                        )                             
+                                        ),                
+                        kwargs_fill=dict(visible=False)
                        )
 
     ax0.loglog()
@@ -245,10 +257,10 @@ def main():
                         projection=True,
                         kwargs_script=kwargs_script_proj,
                         scale_y=1/area_ap,
-                        kwargs_plot=kwargs_gal_plot,
+                        kwargs_plot=PlotStyling.kwargs_gal_plot,
                         kwargs_fill=dict(
-                                            color=color_gal_fill
-                                       ) 
+                                            color=PlotStyling.color_gal_fill
+                                       )  
                        )  
 
     plot_massfunction(
@@ -269,10 +281,29 @@ def main():
                                             visible=False                                            
                                         ),
                         kwargs_fill=dict(
-                                            color=color_gal_fill
+                                            color=PlotStyling.color_gal_fill
                                         )  
                        )
-
+    plot_massfunction(
+                        fig, 
+                        ax1, 
+                        gout_um,
+                        bins=bins_galacticus, 
+                        key_mass=ParamKeys.mass_bound,
+                        plot_dndlnm=plot_dndlnm,                        
+                        plot_ratio=plot_ratio,
+                        error_plot=False,
+                        nfilter=nfilter_proj_subh,
+                        projection=True,
+                        kwargs_script=kwargs_script_proj,
+                        scale_y=1/area_ap,
+                        kwargs_plot=dict(
+                                            color=PlotStyling.color_gal_um
+                                        ),
+                        kwargs_fill=dict(
+                                         visible=False
+                                        )
+                       )
     plot_massfunction(
                         fig, 
                         ax1, 
@@ -281,14 +312,15 @@ def main():
                         key_mass=ParamKeys.mass_bound,
                         plot_dndlnm=plot_dndlnm,                        
                         plot_ratio=plot_ratio,
-                        error_plot=True,
+                        error_plot=False,
                         nfilter=nfilter_proj_subh,
                         projection=True,
                         kwargs_script=kwargs_script_proj,
                         scale_y=1/area_ap,
                         kwargs_plot=dict(
-                                            color=color_sym_plot
-                                        )
+                                            color=PlotStyling.color_sym_plot
+                                        ),
+                        kwargs_fill=dict(visible=False)
                        )
 
     ax1.set_xlabel(r"$m / M_h$")
@@ -297,7 +329,7 @@ def main():
     ax1.loglog()
 
     # ax2
-    ax2.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | kwargs_gal_plot))
+    ax2.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | PlotStyling.kwargs_gal_plot))
 
     plot_massfunction_ratio(
                             fig, 
@@ -309,7 +341,21 @@ def main():
                             plot_ratio=plot_ratio,
                             nfilter=nfilter_subh,
                             kwargs_plot=dict(
-                                             color=color_sym_plot
+                                             color=PlotStyling.color_sym_plot
+                                            )
+                           ) 
+
+    plot_massfunction_ratio(
+                            fig, 
+                            ax2, 
+                            gout_um,
+                            gout_nd,
+                            bins=bins_symphony,
+                            key_mass=ParamKeys.mass_bound,
+                            plot_ratio=plot_ratio,
+                            nfilter=nfilter_subh,
+                            kwargs_plot=dict(
+                                             color=PlotStyling.color_gal_um
                                             )
                            ) 
     ax2:Axes = ax2
@@ -322,7 +368,7 @@ def main():
  
 
     #ax3
-    ax3.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | kwargs_gal_plot))
+    ax3.hlines(1.0, *xlim, **(KWARGS_DEF_PLOT | PlotStyling.kwargs_gal_plot))
 
     plot_massfunction_ratio(
                             fig, 
@@ -336,7 +382,23 @@ def main():
                             projection=True,
                             kwargs_script=kwargs_script_proj,                       
                             kwargs_plot=dict(
-                                             color=color_sym_plot
+                                             color=PlotStyling.color_sym_plot
+                                            )
+                           )     
+
+    plot_massfunction_ratio(
+                            fig, 
+                            ax3, 
+                            gout_um,
+                            gout_nd,
+                            bins=bins_symphony,
+                            key_mass=ParamKeys.mass_bound,
+                            plot_ratio=plot_ratio,
+                            nfilter=nfilter_proj_subh,
+                            projection=True,
+                            kwargs_script=kwargs_script_proj,                       
+                            kwargs_plot=dict(
+                                             color=PlotStyling.color_gal_um                                             
                                             )
                            )     
     ax3.set_xscale("log") 

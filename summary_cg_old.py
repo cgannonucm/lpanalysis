@@ -32,6 +32,7 @@ from summary_M1E13_z05 import macro_scaling_projected_annulus_rv,macro_sigma_sub
 
 
 if __name__ == "__main__":
+
     data_dir = "data/galacticus/xiaolong_update/cg-2"
     csv_out = "summary_cg.csv"
 
