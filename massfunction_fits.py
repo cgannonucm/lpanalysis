@@ -15,9 +15,6 @@ from summary import HDF5Wrapper
 from plotting_util import savedf
 
 
-from gstk.scripts.massfunction import script_massfunction
-from gstk.scripts.selection import script_selector_subhalos_valid
-
 def fits_to_df(fits:dict[str,LinearRegression])->pd.DataFrame:
     l = len(fits)
 

@@ -15,28 +15,11 @@ from matplotlib.axes import Axes
 from typing import Any
 import os.path as path
 
-from gstk.util import util_tabulate
-from gstk.hdf5util import read_dataset
-from gstk.common.constants import GParam, CPhys
-from gstk.util import util_binedgeavg
-from gstk.io import csv_cacheable, io_importgalout, io_import_directory
-from gstk.scripts.common import ScriptProperties, script, NodeSelector, TabulatedGalacticusData
-from gstk.scripts.spatial import script_rvir_halos, script_dnda_with_error, script_dndv_with_error, script_dndv
-from gstk.scripts.selection import script_selector_subhalos_valid, script_selector_halos, script_select_nodedata, script_selector_tree, script_selector_annulus
-from gstk.scripts.massfunction import script_massfunction
-from gstk.macros.common import MacroScalingKeys
-from gstk.macros.scaling import macro_scaling_filemassz
-from gstk.scripts.sigmasub import sigsub_var_M0, sigsub_var_sigma_sub, sigsub_var_N0, sigsub_var_M_extrap
-from gstk.macros.common import macro_combine, macro_run
-from gstk.macros.scaling import macro_scaling_projected_annulus
-from gstk.common.util import ifisnone
-from astropy.cosmology import FlatLambdaCDM
-from typing import Iterable
 import pandas as pd
 from numpy.dtypes import StrDType
 
 from plotting_util import savedf
-from scaling_fit import  scaling_fit_mhz_def, import_csv, PARAM_KEY_N_PROJ_BOUND
+from scaling_fit import  scaling_fit_mhz_def, PARAM_KEY_N_PROJ_BOUND
 
 
 def scaling_F(mh, z, k1, k2, mscale=1E13, zshift=0.5):
@@ -44,9 +27,19 @@ def scaling_F(mh, z, k1, k2, mscale=1E13, zshift=0.5):
 
 def main(): 
     path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
-    scaling_data = import_csv(path_csv)
 
-    fit = scaling_fit_mhz_def(scaling_data, key_n_proj=PARAM_KEY_N_PROJ_BOUND)
+    scaling_data = pd.read_csv(path_csv)
+
+    key_n_proj = "n_projected 1.00E-02[MPC] < r_2d < 2.00E-02[MPC] 1.0E+08 < M < 1.0E+09 mass_bound"
+    key_mass   = "TreeMass [M_sol]"
+    key_z      = "z"
+
+    fit = scaling_fit_mhz_def(
+                              scaling_data,
+                              key_n_proj=key_n_proj,
+                              key_mass=key_mass,
+                              key_z=key_z
+                             )
 
     cosmo = cosmology.setCosmology("planck18")
 
@@ -55,6 +48,7 @@ def main():
     # Then we scale back up again
     nadler_l_0, nadler_u_0 = 1.5E-2, 3.0E-2  
     nadler_rescale = scaling_F(1.7E12, 0, 0.88, 1.7)
+
     #print(nadler_rescale)
     nadler_l, nadler_u = nadler_l_0 * nadler_rescale, nadler_u_0 * nadler_rescale
     

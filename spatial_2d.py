@@ -188,24 +188,32 @@ def main():
                  )
 
 
-    #plot_dnda(
-    #          fig, 
-    #          ax, 
-    #          gout_um,
-    #          nfilter=nfsubh_evo,
-    #          normvector=normvectors,
-    #          bins=rbins, 
-    #          scale_y=1E-6,
-    #          scale_x=1E3,
-    #          error_plot=False,
-    #          kwargs_plot=(PlotStyling.kwargs_gal_plot | (dict(color=colorg))),
-    #          kwargs_fill=dict(
-    #                           color=colorg,
-    #                           label="Galacticus (Central Galaxy, evolved)"
-    #                          )
-    #         )
+    plot_dnda(
+              fig,
+              ax,
+              gout_um,
+              nfilter=nfsubh_evo,
+              normvector=normvectors,
+              bins=rbins,
+              scale_y=1E-6,
+              scale_x=1E3,
+              error_plot=False,
+              kwargs_plot=(
+                           PlotStyling.kwargs_gal_plot |
+                           dict(
+                                color="tab:green",
+                                linestyle="dotted",
+                                label="Galacticus (Central Galaxy)"
+                               )
+                          ),
+              kwargs_fill=dict(
+                               visible=False
+                              )
+             )
 
     slacs_median_einstien_radius_arcsec = 1.17
+    print(slacs_median_einstien_radius_arcsec / to_as * 1E3)
+
 
     ax.vlines(
               slacs_median_einstien_radius_arcsec / to_as * 1E3,
@@ -225,7 +233,7 @@ def main():
     twiny.set_ylabel(r"$\frac{dN}{dA}$ [arcsec$^{-2}$] ($m > 10^8 M_\odot$)") 
    
     #ax.set_ylim(5E-5, 6E-2)
-    ax.legend(loc="lower right")
+    ax.legend(loc="lower right", fontsize="17")
 
     ax.set_yscale("log")
 

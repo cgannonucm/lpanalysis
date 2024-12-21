@@ -327,15 +327,14 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
     ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:orange", label=r"z = 0.8")))
     ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:blue", label=r"z = 0.2")))
 
-    ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:purple", label=r"$\log (M_h / M_\odot)$ = 13.5")))
-    ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:olive", label=r"$\log (M_h / M_\odot)$ = 12")))
+    #ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:purple", label=r"$\log (M_h / M_\odot)$ = 13.5")))
+    #ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:olive", label=r"$\log (M_h / M_\odot)$ = 12")))
 
     ax1.legend()
     ax2.legend()
 
     ax1.set_ylabel("Scaling (unevolved)")
     ax2.set_ylabel("Scaling (evolved)")
-
 
 def plot_z_scaling(fig, axs, filend, scaling_data):
     mh, z = scaling_data[KEY_DEF_HALOMASS], scaling_data[KEY_DEF_Z]
@@ -378,7 +377,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
     ax1, ax2 = axs
 
     plot_scaling_def(fig, ax1, scaling_data,key_n_proj_infall, key_n_proj_infall_scatter,
-                        kwargs_fill=kwargs_fill, kwargs_plot=kwargs_mean)
+                        kwargs_fill=kwargs_fill, kwargs_plot=kwargs_mean, labeler=label_hm)
 
     plot_scaling_def(fig, ax2, scaling_data,key_n_proj_bound, key_n_proj_bound_scatter, 
                         kwargs_fill=kwargs_fill, kwargs_plot=kwargs_mean, labeler=label_hm) 
@@ -436,7 +435,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
     ax1.set_ylabel("Scaling (unevolved)")
     ax2.set_ylabel("Scaling (evolved)")
 
-    
+    ax1.legend(loc="lower right")
 
 def main():
     path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
@@ -467,7 +466,6 @@ def main():
     #axs[1,1].legend(loc="upper right", bbox_to_anchor=(-0.5,-1), fancybox=True, shadow=True) 
     
     fig.tight_layout()
-
 
     savefig(fig,"scaling.png")
     savefig(fig,"scaling.pdf")

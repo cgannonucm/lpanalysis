@@ -196,8 +196,15 @@ def main():
         ax.loglog()
         #ax.yaxis.set_minor_formatter(ticker.NullFormatter())
         ax.hlines(1, 0.1, 1, **(KWARGS_DEF_PLOT), color="black", linestyle="dashed", label=r"$\rho_h$")
-        ax.yaxis.set_minor_formatter(ticker.NullFormatter())
+        #ax.yaxis.set_minor_formatter(ticker.NullFormatter())
+        ax.xaxis.set_minor_locator(ticker.MaxNLocator(nbins=6))
+        ax.xaxis.set_minor_formatter('{x:.1f}')
+        ax.xaxis.set_major_formatter('{x:.1f}')
+
+        ax.yaxis.set_minor_locator(ticker.MaxNLocator(nbins=6))
+        ax.yaxis.set_minor_formatter('{x:.1f}')
         ax.yaxis.set_major_formatter('{x:.1f}')
+
         ax.set_xlabel("$r / r_v$")
 
     #labels 

@@ -34,8 +34,8 @@ def summary_macro(mass_min, mass_max, mbincount, rap_min, rap_max, mass_range_3d
 
     normvectors = np.identity(3)
 
-    label_mfpj_u =  f"massfunction (unevolved) ({rap_min} < " + "r_{2d}" + f" / MPC <= {rap_max})" 
-    label_mfpj_e =  f"massfunction (evolved) ({rap_min} < " + "r_{2d}" + f" / MPC <= {rap_max})"    
+    label_mfpj_u  =  f"massfunction (unevolved) ({rap_min} < " + "r_{2d}" + f" / MPC <= {rap_max})"
+    label_mfpj_e  =  f"massfunction (evolved) ({rap_min} < " + "r_{2d}" + f" / MPC <= {rap_max})"
     label_nrap_u  =  f"n unevolved {rap_min} < " + "r_{2d}" + f" <= {rap_max}, {mass_min:.2e} < m < {mass_max:.2e}"
     label_nrap_e  =  f"n evolved {rap_min} < " + "r_{2d}" + f" <= {rap_max}, {mass_min:.2e} < m_e < {mass_max:.2e}"
 
@@ -47,7 +47,7 @@ def summary_macro(mass_min, mass_max, mbincount, rap_min, rap_max, mass_range_3d
         return gout["concentration"]
 
     macros = {
-                "halo mass"                 : freeze(nodedata, key=ParamKeys.mass_basic    , nfilter=nfilter_halos),
+        "halo mass"                 : freeze(nodedata, key=ParamKeys.mass_basic    , nfilter=nfilter_halos),
                 "z"                         : freeze(nodedata, key=ParamKeys.z_lastisolated, nfilter=nfilter_halos),
                 "concentration (host)"      : freeze(get_concentration, nfilter=nfilter_halos),
                 "rvir (host)"               : freeze(nodedata, key=ParamKeys.rvir, nfilter=nfilter_halos),

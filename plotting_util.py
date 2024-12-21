@@ -56,7 +56,7 @@ class PlotStyling():
  
 
 def set_plot_defaults():
-    path_fonts = "/home/charles/research/lensing_perspective_accompaniment/fonts"
+    path_fonts = "fonts"
     fonts = font_manager.findSystemFonts(fontpaths=path_fonts)
 
     for font in fonts:

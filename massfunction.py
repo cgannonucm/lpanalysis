@@ -84,8 +84,10 @@ def plot_massfunction_ratio(
                             projection=False,
                             kwargs_plot=None,
                             kwargs_script=None,
+                            kwargs_fill=None
                        ):
     kwargs_script = {} if kwargs_script is None else kwargs_script
+    kwargs_fill = {} if kwargs_fill is None else kwargs_fill
     
     _, mbins = np.histogram((1, ), bins=bins, range=range)
     nfitler_def = freeze(nfilter_subhalos_valid, mass_min=mbins[0], mass_max=mbins[-1], key_mass=key_mass)
@@ -116,16 +118,14 @@ def plot_massfunction_ratio(
                              projection=projection,
                              kwargs_script=kwargs_script, 
                              kwargs_plot=kwargs_plot,
-                             kwargs_fill=dict(
-                                               visible=False
-                                             ),
-                             scale_y=1 / mf,
+                             kwargs_fill=kwargs_fill,
+                             scale_y=1 / mf
                             )   
         
 def main():
     fname = "massfunction"
 
-    path_nd     = "data/galacticus/um_update/dmo.hdf5" 
+    path_nd     = "data/galacticus/um_update/dmo/dmo.hdf5"
     path_symphony = "data/symphony/SymphonyGroup/"
     path_um       = "data/galacticus/um_update/umachine.hdf5" 
 
@@ -199,25 +199,25 @@ def main():
                                          visible=False
                                         )
                        )
-
-    plot_massfunction(
-                        fig, 
-                        ax0, 
-                        gout_nd,
-                        bins=bins_galacticus,
-                        key_mass=ParamKeys.mass_bound,
-                        plot_dndlnm=plot_dndlnm,
-                        plot_ratio=plot_ratio,
-                        error_plot=False,
-                        nsigma=2,
-                        nfilter=nfilter_subh,
-                        kwargs_plot=dict(                                            
-                                            visible=False
-                                        ),
-                        kwargs_fill=dict(
-                                         color=PlotStyling.color_gal_fill
-                                        )                       
-                       )
+    # Plots 2 sigma
+    #plot_massfunction(
+    #                    fig,
+    #                    ax0,
+    #                    gout_nd,
+    #                    bins=bins_galacticus,
+    #                    key_mass=ParamKeys.mass_bound,
+    #                    plot_dndlnm=plot_dndlnm,
+    #                    plot_ratio=plot_ratio,
+    #                    error_plot=False,
+    #                    nsigma=2,
+    #                    nfilter=nfilter_subh,
+    #                    kwargs_plot=dict(
+    #                                        visible=False
+    #                                    ),
+    #                    kwargs_fill=dict(
+    #                                     color=PlotStyling.color_gal_fill
+    #                                    )
+    #                   )
 
     plot_massfunction(
                         fig, 
@@ -231,6 +231,7 @@ def main():
                         nfilter=nfilter_subh,
                         kwargs_plot=dict(
                                             color=PlotStyling.color_sym_plot,
+                                            path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()],
                                             label="Symphony"
                                         ),                
                         kwargs_fill=dict(visible=False)
@@ -262,28 +263,29 @@ def main():
                                             color=PlotStyling.color_gal_fill
                                        )  
                        )  
+    # Plots 2 sigma
+    #plot_massfunction(
+    #                    fig,
+    #                    ax1,
+    #                    gout_nd,
+    #                    bins=bins_galacticus,
+    #                    key_mass=ParamKeys.mass_bound,
+    #                    plot_dndlnm=plot_dndlnm,
+    #                    plot_ratio=plot_ratio,
+    #                    error_plot=False,
+    #                    nsigma=2,
+    #                    nfilter=nfilter_proj_subh,
+    #                    projection=True,
+    #                    kwargs_script=kwargs_script_proj,
+    #                    scale_y=1/area_ap,
+    #                    kwargs_plot=dict(
+    #                                        visible=False
+    #                                    ),
+    #                    kwargs_fill=dict(
+    #                                        color=PlotStyling.color_gal_fill
+    #                                    )
+    #                   )
 
-    plot_massfunction(
-                        fig, 
-                        ax1, 
-                        gout_nd,
-                        bins=bins_galacticus,
-                        key_mass=ParamKeys.mass_bound,
-                        plot_dndlnm=plot_dndlnm,
-                        plot_ratio=plot_ratio,
-                        error_plot=False,
-                        nsigma=2,
-                        nfilter=nfilter_proj_subh,
-                        projection=True,
-                        kwargs_script=kwargs_script_proj,
-                        scale_y=1/area_ap,
-                        kwargs_plot=dict(
-                                            visible=False                                            
-                                        ),
-                        kwargs_fill=dict(
-                                            color=PlotStyling.color_gal_fill
-                                        )  
-                       )
     plot_massfunction(
                         fig, 
                         ax1, 
@@ -298,7 +300,8 @@ def main():
                         kwargs_script=kwargs_script_proj,
                         scale_y=1/area_ap,
                         kwargs_plot=dict(
-                                            color=PlotStyling.color_gal_um
+                                            color=PlotStyling.color_gal_um,
+                                            path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
                                         ),
                         kwargs_fill=dict(
                                          visible=False
@@ -318,7 +321,8 @@ def main():
                         kwargs_script=kwargs_script_proj,
                         scale_y=1/area_ap,
                         kwargs_plot=dict(
-                                            color=PlotStyling.color_sym_plot
+                                            color=PlotStyling.color_sym_plot,
+                                            path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
                                         ),
                         kwargs_fill=dict(visible=False)
                        )
@@ -341,6 +345,10 @@ def main():
                             plot_ratio=plot_ratio,
                             nfilter=nfilter_subh,
                             kwargs_plot=dict(
+                                             color=PlotStyling.color_sym_plot,
+                                             path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
+                                            ),
+                            kwargs_fill=dict(
                                              color=PlotStyling.color_sym_plot
                                             )
                            ) 
@@ -355,6 +363,10 @@ def main():
                             plot_ratio=plot_ratio,
                             nfilter=nfilter_subh,
                             kwargs_plot=dict(
+                                             color=PlotStyling.color_gal_um,
+                                             path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
+                                            ),
+                            kwargs_fill=dict(
                                              color=PlotStyling.color_gal_um
                                             )
                            ) 
@@ -382,6 +394,10 @@ def main():
                             projection=True,
                             kwargs_script=kwargs_script_proj,                       
                             kwargs_plot=dict(
+                                             color=PlotStyling.color_sym_plot,
+                                             path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
+                                            ),
+                            kwargs_fill=dict(
                                              color=PlotStyling.color_sym_plot
                                             )
                            )     
@@ -398,7 +414,11 @@ def main():
                             projection=True,
                             kwargs_script=kwargs_script_proj,                       
                             kwargs_plot=dict(
-                                             color=PlotStyling.color_gal_um                                             
+                                             color=PlotStyling.color_gal_um,
+                                             path_effects=[pe.Stroke(linewidth=8, foreground="black"), pe.Normal()]
+                                            ),
+                            kwargs_fill=dict(
+                                             color=PlotStyling.color_gal_um
                                             )
                            )     
     ax3.set_xscale("log") 

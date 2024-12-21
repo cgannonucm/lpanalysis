@@ -143,7 +143,7 @@ def main():
                                color="tab:red",
                                label="Galacticus (unevolved)"
                               ),
-              kwargs_fill=dict(visible=False)
+              kwargs_fill=dict(color="tab:red")
              )
     
     plot_dndv(
@@ -158,7 +158,7 @@ def main():
                                color="tab:orange",
                                label="Galacticus (evolved)"
                               ),
-              kwargs_fill=dict(visible=False)
+              kwargs_fill=dict(color="tab:orange")
              )
 
     plot_dndv(
@@ -206,10 +206,12 @@ def main():
                   )
 
     ax.loglog()       
-    ax.xaxis.set_ticks(np.asarray((0.1, 0.5, 1.0)))
+    ax.xaxis.set_ticks(np.asarray((0.1, 1.0)))
 
+    ax.xaxis.set_minor_locator(ticker.MaxNLocator(nbins=5))
     ax.xaxis.set_major_formatter('{x:.1f}')
-    ax.xaxis.set_minor_formatter(ticker.NullFormatter()) 
+    ax.xaxis.set_minor_formatter('{x:.1f}')
+
 
     ax.set_xlabel(r"$r / r_v$")
     ax.set_ylabel(r"$\rho_{sub}$ [kpc$^{-3}$]")
