@@ -166,3 +166,10 @@ cython_debug/
 
 out/
 data/
+
+*.dat
+
+.history/
+.venv-old/
+cache/
+*.out

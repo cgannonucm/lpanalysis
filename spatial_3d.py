@@ -213,8 +213,8 @@ def main():
     ax.xaxis.set_minor_formatter('{x:.1f}')
 
 
-    ax.set_xlabel(r"$r / r_v$")
-    ax.set_ylabel(r"$\rho_{sub}$ [kpc$^{-3}$]")
+    ax.set_xlabel(r"$r / r_{\mathrm{v}}$")
+    ax.set_ylabel(r"$n_{\mathrm{sub}}$ [kpc$^{-3}$]")
 
     ax.legend()    
     ax.set_ylim(1E-7,2E-4)

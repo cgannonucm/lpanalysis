@@ -239,8 +239,8 @@ def main():
 
     ax0.loglog()
     
-    ax0.set_xlabel(r"$m / M_h$")
-    ax0.set_ylabel(r"$\frac{dN}{d \ln m}$")
+    ax0.set_xlabel(r"$m / M_{\mathrm{h}}$")
+    ax0.set_ylabel(r"$\frac{\mathrm{d}N}{\mathrm{d} \ln m}$")
     ax0.legend()
 
 
@@ -327,8 +327,8 @@ def main():
                         kwargs_fill=dict(visible=False)
                        )
 
-    ax1.set_xlabel(r"$m / M_h$")
-    ax1.set_ylabel(r"$\frac{d^2 N}{d \ln m dA}$ [kpc$^{-2}$]")
+    ax1.set_xlabel(r"$m / M_{\mathrm{h}}$")
+    ax1.set_ylabel(r"$\frac{\mathrm{d}^2 N}{\mathrm{d} \ln m \mathrm{d}A}$ [kpc$^{-2}$]")
 
     ax1.loglog()
 
@@ -375,7 +375,8 @@ def main():
     ax2.set_xscale("log") 
     ax2.set_xlim(1E-5, 1E0)
     ax2.set_ylim(*ylim_ratio)
-    ax2.set_xlabel("$M / M_h$")
+
+    ax2.set_xlabel(r"$m / M_{\mathrm{h}}$")
     ax2.set_ylabel("ratio")
  
 
@@ -425,8 +426,7 @@ def main():
     ax3.set_xlim(1E-5, 1E0)
     ax3.set_ylim(*ylim_ratio)
 
-
-    ax3.set_xlabel("$M / M_h$")
+    ax3.set_xlabel(r"$m / M_{\mathrm{h}}$")
     ax3.set_ylabel("ratio (inner 50kpc)")
 
 

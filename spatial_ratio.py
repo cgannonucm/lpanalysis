@@ -109,7 +109,7 @@ def main():
         c, rv = scalingsum["concentration (host) (mean)/out0"][:][n], scalingsum["rvir (host) (mean)/out0"][:][n], 
         m = markers[i]
 
-        plot_spatial_ratio(fig, ax0, dndv_evo, dndv_evo_rbins_rvf, rv, c, kwargs_plot=dict(label=f"z={z:.1f}, log M$_h$ = {np.log10(mh):.1f}"))
+        plot_spatial_ratio(fig, ax0, dndv_evo, dndv_evo_rbins_rvf, rv, c, kwargs_plot=dict(label=f"z={z:.1f}, log " + r"M$_{\mathrm{h}}$" + f" = {np.log10(mh):.1f}"))
         plot_spatial_ratio(fig, ax1, dndv_unevo, dndv_unevo_rbins_rvf, rv, c)       
 
         # fit 
@@ -188,8 +188,8 @@ def main():
     #                                        )
     #                       )
 
-    ax0.set_ylabel(r"$\rho_{sub} / \rho_h$ (evolved)")
-    ax1.set_ylabel(r"$\rho_{sub} / \rho_h$ (unevolved)")
+    ax0.set_ylabel(r"$n_{\mathrm{sub}} / \rho_{\mathrm{h}}$ (evolved)")
+    ax1.set_ylabel(r"$n_{\mathrm{sub}} / \rho_{\mathrm{h}}$ (unevolved)")
 
 
     for ax in axs.flatten():
@@ -205,7 +205,7 @@ def main():
         ax.yaxis.set_minor_formatter('{x:.1f}')
         ax.yaxis.set_major_formatter('{x:.1f}')
 
-        ax.set_xlabel("$r / r_v$")
+        ax.set_xlabel(r"$r / r_{\mathrm{v}}$")
 
     #labels 
     ax0.legend()

@@ -124,7 +124,7 @@ def main():
 
     cosmo = cosmology.setCosmology("planck18")
     rad_to_as = 2.06E5
-    to_as =  2 / cosmo.angularDiameterDistance(0.5) * cosmo.h * rad_to_as
+    to_as =  1 / cosmo.angularDiameterDistance(0.5) * cosmo.h * rad_to_as
 
     twinx.set_xlim(xlim * 1E-3 * to_as)
     twiny = ax.twinx()
@@ -226,11 +226,11 @@ def main():
              )
     
  
-    ax.set_xlabel(r"$r_{2d}$ [kpc]")
-    ax.set_ylabel(r"$\frac{dN}{dA}$ [kpc$^{-2}$] ($m > 10^8 M_\odot$)") 
+    ax.set_xlabel(r"$r_{\mathrm{2d}}$ [kpc]")
+    ax.set_ylabel(r"$\frac{\mathrm{d}N}{\mathrm{d}A}$ [kpc$^{-2}$] ($m > 10^8 M_\odot$)")
 
-    twinx.set_xlabel(r"$r_{2d}$ [arcsec]")
-    twiny.set_ylabel(r"$\frac{dN}{dA}$ [arcsec$^{-2}$] ($m > 10^8 M_\odot$)") 
+    twinx.set_xlabel(r"$r_{\mathrm{2d}}$ [arcsec]")
+    twiny.set_ylabel(r"$\frac{\mathrm{d}N}{\mathrm{d}A}$ [arcsec$^{-2}$] ($m > 10^8 M_\odot$)")
    
     #ax.set_ylim(5E-5, 6E-2)
     ax.legend(loc="lower right", fontsize="17")

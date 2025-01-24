@@ -259,7 +259,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
     dict_g200 = convert_to_dict(mh_mg, z_mg, scaling_g200)
     #dict_interp = convert_to_dict(mh_mg, z_mg, scaling_interp)
 
-    label_hm = lambda m: "$\log_{10}(M_h / M_\odot) = " + f"{np.log10(m):.1f}" + r"$"
+    label_hm = lambda m: r"$\log_{10}(M_{\mathrm{h}} / M_\odot) = " + f"{np.log10(m):.1f}" + r"$"
 
     ax1, ax2 = axs
 
@@ -369,7 +369,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
     dict_g200 = convert_to_dict(mh_mg, z_mg, scaling_g200) 
     #dict_interp = convert_to_dict(mh_mg, z_mg, scaling_interp) 
 
-    label_hm = lambda m: "$\log_{10}(M_h / M_\odot) = " + f"{np.log10(m):.1f}" + r"$" 
+    label_hm = lambda m: r"$\log_{10}(M_{\mathrm{h}} / M_\odot) = " + f"{np.log10(m):.1f}" + r"$"
 
     for ax in axs:
         ax.set_prop_cycle(color=['tab:olive', 'tab:pink'])

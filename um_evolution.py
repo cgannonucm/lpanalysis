@@ -75,8 +75,8 @@ def main():
     
         fig, axs = plt.subplots(figsize=(18,18), ncols=2, nrows=3)
 
-        ax0, ax1 = axs[0]
-        ax2, ax3 = axs[1]
+        ax2, ax3 = axs[0]
+        ax0, ax1 = axs[1]
         ax4, ax5 = axs[2]
     
         out_indexes = get_galacticus_outputs(gout)[::5]
@@ -195,7 +195,7 @@ def main():
         ax5.set_yscale("log")
     
         ax5.set_xlabel("z")
-        ax5.set_ylabel(r"r$_\star$ / r$_{vir}$")   
+        ax5.set_ylabel(r"r$_\star$ / r$_{v}$")
     
         for ax in (ax4, ax5):
             ax.set_ylim(1E-3, 2E-2)
