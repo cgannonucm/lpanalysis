@@ -201,7 +201,7 @@ def main():
                    scale_y=1E-9,
                    kwargs_plot=dict(
                                     color="tab:purple",
-                                    label="best fit (Han (2016))"
+                                    label="Han (2016) best fit"
                                    )
                   )
 

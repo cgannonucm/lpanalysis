@@ -62,6 +62,7 @@ def macro_sigma_sub(file:GFile, mpivot:float, alpha:float, r0:float,r1:float,mra
 
     n_arr_i, n_arr_b = sigsub_var_i["n"], sigsub_var_b["n"]
     n_arr_fs = n_arr_b / n_arr_i
+    n_arr_fs = n_arr_b / n_arr_i
 
     n_avg_i, n_std_i = np.mean(n_arr_i), np.std(n_arr_i)
     n_avg_b, n_std_b = np.mean(n_arr_b), np.std(n_arr_b)

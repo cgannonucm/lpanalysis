@@ -161,6 +161,10 @@ def main():
     ax0, ax1 = axs[0]
     ax2, ax3 = axs[1]
 
+    ax0.text(0.8, 0.7, r'$r < r_{v}$', horizontalalignment='center', verticalalignment='center', transform=ax0.transAxes)
+    ax1.text(0.8, 0.7, r'$r_{2d} < 50 \mathrm{~ kpc}$', horizontalalignment='center', verticalalignment='center', transform=ax1.transAxes)
+
+
     for ax in axs.flatten():
         ax.set_xlim(*xlim)
 
@@ -193,7 +197,7 @@ def main():
                         nfilter=nfilter_subh,
                         kwargs_plot=(
                                      PlotStyling.kwargs_gal_plot | 
-                                     dict(label="Galacticus (Central Galaxy)", color=PlotStyling.color_gal_um)
+                                     dict(label="Galacticus (central galaxy)", color=PlotStyling.color_gal_um)
                                     ),
                         kwargs_fill=dict(
                                          visible=False

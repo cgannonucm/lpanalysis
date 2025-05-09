@@ -109,7 +109,7 @@ def main():
         c, rv = scalingsum["concentration (host) (mean)/out0"][:][n], scalingsum["rvir (host) (mean)/out0"][:][n], 
         m = markers[i]
 
-        plot_spatial_ratio(fig, ax0, dndv_evo, dndv_evo_rbins_rvf, rv, c, kwargs_plot=dict(label=f"z={z:.1f}, log " + r"M$_{\mathrm{h}}$" + f" = {np.log10(mh):.1f}"))
+        plot_spatial_ratio(fig, ax0, dndv_evo, dndv_evo_rbins_rvf, rv, c, kwargs_plot=dict(label=f"z={z:.1f}" + r", $\log_{10} \left( M_{\mathrm{h}} / M_\odot \right)$" + f" = {np.log10(mh):.1f}"))
         plot_spatial_ratio(fig, ax1, dndv_unevo, dndv_unevo_rbins_rvf, rv, c)       
 
         # fit 

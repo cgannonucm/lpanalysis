@@ -321,8 +321,8 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
     #ax2.set_ylabel("$F_b$")
 
     # Dummy plots for labels
-    ax1.plot((0,0), (0,0), **(KWARGS_DEF_PLOT | dict(label="Host Density", color="tab:cyan", linestyle="dashed")))
-    ax1.plot((0,0), (0,0), **(KWARGS_DEF_PLOT | kwargs_fit | dict(label="Scaling Best Fit")))
+    ax1.plot((0,0), (0,0), **(KWARGS_DEF_PLOT | dict(label="host density", color="tab:cyan", linestyle="dashed")))
+    ax1.plot((0,0), (0,0), **(KWARGS_DEF_PLOT | kwargs_fit | dict(label="scaling best fit")))
 
     ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:orange", label=r"z = 0.8")))
     ax1.fill_between((0,0), (0,0), (0,0), **(KWARGS_DEF_FILL | kwargs_fill | dict(color="tab:blue", label=r"z = 0.2")))
@@ -461,6 +461,7 @@ def main():
 
     plot_mh_scaling(fig,axs[0],filend,scaling_data)
     plot_z_scaling(fig,axs[1],filend,scaling_data)
+
     #plot_sym_mass_scaling(fig, axs[0][1], scaling_data, key_n_proj_bound, file_sym_mw, file_sym_group, (1E8, 1E9), (0, 1E-1))
 
     #axs[1,1].legend(loc="upper right", bbox_to_anchor=(-0.5,-1), fancybox=True, shadow=True) 

@@ -203,7 +203,7 @@ def main():
                            dict(
                                 color="tab:green",
                                 linestyle="dotted",
-                                label="Galacticus (Central Galaxy)"
+                                label="Galacticus (central galaxy)"
                                )
                           ),
               kwargs_fill=dict(
