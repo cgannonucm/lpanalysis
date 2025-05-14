@@ -438,7 +438,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
     ax1.legend(loc="lower right")
 
 def main():
-    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_file =  "data/galacticus/mh1E13z05/dmo.hdf5"
     path_symdir = "data/symphony/"
     path_sym_group = path_symdir + "SymphonyGroup/"
     path_sym_mw = path_symdir + "SymphonyMilkyWay/"

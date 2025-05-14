@@ -94,8 +94,8 @@ def main():
     #path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
    
     path_symphony = "data/symphony/SymphonyGroup/"
-    path_gout     = "data/galacticus/um_update/dmo/dmo.hdf5"
-    path_um       = "data/galacticus/um_update/umachine.hdf5" 
+    path_gout     = "data/galacticus/mh1E13z05/dmo.hdf5"
+    path_um       = "data/galacticus/mh1E13z05_um/umachine.hdf5" 
   
     #rrange_rvf = PARAM_DEF_RRANGE_RVF
     rrange_rvf = (0.1, 1)

@@ -125,9 +125,9 @@ def plot_massfunction_ratio(
 def main():
     fname = "massfunction"
 
-    path_nd     = "data/galacticus/um_update/dmo/dmo.hdf5"
+    path_nd     = "data/galacticus/mh1E13z05/dmo.hdf5"
     path_symphony = "data/symphony/SymphonyGroup/"
-    path_um       = "data/galacticus/um_update/umachine.hdf5" 
+    path_um       = "data/galacticus/mh1E13z05_um/umachine.hdf5" 
 
     gout_nd = tabulate_trees(h5py.File(path_nd))
     gout_um = tabulate_trees(h5py.File(path_um))

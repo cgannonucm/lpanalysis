@@ -62,7 +62,7 @@ def plot_most_massive_progenitor_property(fig,
 
 def main():
     fname = "um_evolution"
-    path_file = "data/galacticus/um_update/um-multiz/multiz.hdf5"  
+    path_file = "data/galacticus/multiz_um/multiz_um.hdf5"  
     #path_file = "/home/charles/research/lpanalysis/data/galacticus/scaling_um/lsubmodv3.2-um-scaling-date-09.18.2024-time-19.20.41-z-2.00000E-01-hm-1.00000E+13.xml.hdf5"
 
     with h5py.File(path_file) as gout:
