@@ -97,3 +97,4 @@ ujson==5.10.0
 urllib3==2.3.0
 wcwidth==0.2.13
 yapf==0.43.0
+git+https://github.com/cgannonucm/SubScript@d87e689b81a9cc0c5c8bb37393e95cd938f19dd3

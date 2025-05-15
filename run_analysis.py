@@ -5,10 +5,26 @@ import spatial_2d
 import scaling_plot
 import massfunction
 import um_evolution
+import summary_scaling
 
+
+def askyn(question):
+    ans = False
+    while(True):
+        _in = input(f"{question} y or n?")
+        if _in.lower() == "n":
+            break        
+        if _in.lower() == "y":
+            ans = True
+            break
+        print("Please answer y or n") 
+    return ans
 
 def main():
     printlabel = lambda i: print(f"Generating figure {i}")
+    
+    if askyn("Run DMO scaling summary (this may take a while)?"):
+        summary_scaling.main()
 
     #Figures 1-6
     print("Generating figures")

@@ -119,7 +119,7 @@ if __name__ == "__main__":
     logging.root.setLevel(logging.INFO)
 
     fname = "summary.hdf5"
-    path_gout = "data/galacticus/summary"
+    path_gout = "data/galacticus/scaling"
     #gouts     = get_hdf5_dir(path_gout)
     gouts     = [get_hdf5_dir(path_gout)[0], ]
     gout_paths = get_hdf5_dir_path(path_gout)
@@ -134,9 +134,9 @@ if __name__ == "__main__":
     def mrp(path):
         return macro_gen_runner_parallel(macros, statfuncs)(path)
 
-    # with Pool(16) as pool: 
-    #     macro_results = pool.map(mrp, gout_paths)
-    macro_results = [mrp(path) for path in gout_paths]
+    with Pool(16) as pool: 
+         macro_results = pool.map(mrp, gout_paths)
+    #macro_results = [mrp(path) for path in gout_paths]
 
     runner = macro_gen_runner(lambda *a,**k: macro_results)
 

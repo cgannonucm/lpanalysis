@@ -6,6 +6,7 @@ import re
 from multiprocessing import Pool
 from typing import Callable, Iterable
 import logging
+import sys
 
 from subscript.defaults import ParamKeys, Meta
 from subscript.scripts.nodes import nodedata, nodecount
@@ -19,7 +20,7 @@ from subscript.tabulatehdf5 import tabulate_trees
 from plotting_util import savemacro
 from summary import summary_macro, get_hdf5_dir_path, macro_gen_runner_parallel, get_hdf5_dir
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     Meta.cache = False
     logging.root.setLevel(logging.INFO) 
 
@@ -39,10 +40,10 @@ if __name__ == "__main__":
     def mrp(path):
         return macro_gen_runner_parallel(macros, statfuncs=statfuncs)(path)
 
-    with Pool(32) as pool: 
-        macro_results = pool.map(mrp, gout_paths)
+    #with Pool(12) as pool: 
+    #    macro_results = pool.map(mrp, gout_paths)
 
-    #macro_results = [mrp(path) for path in gout_paths]
+    macro_results = [mrp(path) for path in gout_paths]
 
     runner = macro_gen_runner(lambda *a,**k: macro_results)
 
@@ -51,3 +52,4 @@ if __name__ == "__main__":
     logging.info("Finished")
 
     savemacro(macro_out, fname)
+    main()

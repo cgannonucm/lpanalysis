@@ -131,13 +131,7 @@ def main():
     #path_gout = "data/galacticus/version-diff-2/version-diff-2.hdf5"
     #path_gout = "/Users/cgannon/Documents/physics/lpanalysis/data/galacticus/tidal-test/lsubmodv3.2-tidaltest-date-05.10.2025-time-19.41.03-z-5.00000E-01-hm-1.00000E+13-tidalefficiency-1.00000E+01.xml.hdf5"
     #path_gout = "/Users/cgannon/Documents/physics/lpanalysis/data/galacticus/tidal-test/lsubmodv3.2-tidaltest-date-05.10.2025-time-19.41.03-z-5.00000E-01-hm-1.00000E+13-tidalefficiency-1.00000E+00.xml.hdf5"
-    #path_gout = "/Users/cgannon/Documents/physics/lpanalysis/data/galacticus/tidal-test"
-    path_gout = "/Users/cgannon/Documents/physics/lpanalysis/data/galacticus/v3.3-2"
-    print(path_gout)
-
-    #path_symphony = "data/symphony/SymphonyGroup/"
-
-    #symout = symphony_to_galacticus_hdf5(path_symphony, iSnap=203)
+    paf5(path_symphony, iSnap=203)
 
     normvector = np.identity(3)
     alpha = -1.93
