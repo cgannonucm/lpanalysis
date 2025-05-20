@@ -66,7 +66,6 @@ def fit_han_model_gout(gout, rbins_rvf, nfilter)->LinearRegression:
     
     return fit_han_model(
                          dndv=dndv, 
-                         dndv_err=dndv_err,
                          rbins_rvf=rbins_rvf,
                          host_c=c,
                          host_rv=rv
@@ -158,7 +157,7 @@ def main():
 
         ratio_density = ratio_halo_density(dndv_evo, dndv_evo_rbins_rvf, c, rv)     
 
-        ax.plot(dndv_evo_rbins_rvf[:-1], ratio_density, label=r"$log_{10} (M_h) = " + str(np.log10(hm_s)) + r", z = $" + str(z_s) + r", $\gamma$ = " + f"{fit_evo.coef_[0]:.2f}")     
+        ax.plot(dndv_evo_rbins_rvf[:-1], ratio_density, label=r"$log_{10} (M_h) = " + str(np.log10(hm_s)) + r", z = $" + str(z_s) + r", $\gamma$ = " + str(fit_evo.coef_[0]))     
         fits.append(fit_evo)
         
         kfit[i] = fit_evo.coef_[0]
@@ -179,7 +178,7 @@ def main():
     ax.loglog()
     ax.set_xlabel("r / r$_v$")
     ax.set_ylabel("Ratio Of $dN/dV$ To Host Density")
-    ax.legend(fontsize=14)
+    ax.legend(fontsize=15)
     
     savedf(pd.DataFrame.from_dict(hanfitdf),fname + ".csv")
     savefig(fig, fname)

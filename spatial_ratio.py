@@ -108,7 +108,7 @@ def main():
         plot_spatial_ratio(fig, ax1, dndv_unevo, dndv_unevo_rbins_rvf, rv, c)       
 
         # fit 
-        fit = fit_han_model(dndv_evo, None, dndv_evo_rbins_rvf, c, rv)
+        fit = fit_han_model(dndv_evo, dndv_evo_rbins_rvf, c, rv)
 
         continue
         plot_spatial_ratio_fit(
