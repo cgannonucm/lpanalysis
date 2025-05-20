@@ -4,6 +4,7 @@
 import numpy as np
 import h5py
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from sklearn.linear_model import LinearRegression
 from subscript.defaults import ParamKeys
@@ -14,7 +15,7 @@ from subscript.wrappers import gscript, gscript_proj, multiproj, freeze
 from subscript.scripts.histograms import massfunction, bin_avg
 
 from symutil import symphony_to_galacticus_hdf5
-from plotting_util import savedf
+from plotting_util import savedf, savefig_pngpdf
 from massfunction_fits import fit_loglog_massfunction
 
 
@@ -101,7 +102,7 @@ def get_sigmsub(gout, normvector, mmin, mmax, rmin, rmax, alpha, mpivot=1E8, **k
     return sigsub, fs * sigsub, fs, fm, nevo
 
 
-def fit_mf_proj(gout, normvector, mmin, mmax, mbins, rmin, rmax, **kwargs):
+def get_mf_proj(gout, normvector, mmin, mmax, mbins, rmin, rmax, **kwargs):
     nfilter_proj      = nfilter_project2d(None, normvector=normvector, rmin=rmin, rmax=rmax)
     nfilter_evo       = nfand(nfilter_subhalos_valid(None, mmin, mmax, key_mass=ParamKeys.mass_basic), nfilter_proj)
     nfilter_uevo      = nfand(nfilter_subhalos_valid(None, mmin, mmax, key_mass=ParamKeys.mass_bound), nfilter_proj)
@@ -111,10 +112,8 @@ def fit_mf_proj(gout, normvector, mmin, mmax, mbins, rmin, rmax, **kwargs):
     mf_uevo = massfunction(gout, key_mass=ParamKeys.mass_basic, bins=_mbins, nfilter=nfilter_uevo,  summarize=True)
     mf_evo  = massfunction(gout, key_mass=ParamKeys.mass_bound, bins=_mbins, nfilter=nfilter_evo ,  summarize=True)
 
+    return mf_uevo, mf_evo
 
-    fit_uevo, fit_evo = fit_mf(*mf_uevo), fit_mf(*mf_evo)
-
-    return fit_uevo, fit_evo
 
 def fit_mf(massfunction, massfunction_bins):
     x = np.log10((bin_avg(massfunction_bins))).reshape(-1, 1)
@@ -148,30 +147,56 @@ def main():
     labels_mean = ["sigsub", "fs * sigsub", "fs", "fm", "nevo"]
     labels_std  = [l + " [std]" for l in labels_mean]
 
-    print("Galacticus")
-    gout = get_sigmsub(gouth5,normvector=normvector, mmin=gal_mmin, mmax=gal_mmax, rmin=gal_rmin, rmax=gal_rmax, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
-    print(labels_mean)
-    print(gout[0])
-    print(labels_std)
-    print(gout[1])
+#    print("Galacticus")
+#    gout = get_sigmsub(gouth5,normvector=normvector, mmin=gal_mmin, mmax=gal_mmax, rmin=gal_rmin, rmax=gal_rmax, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
+#    print(labels_mean)
+#    print(gout[0])
+#    print(labels_std)
+#    print(gout[1])
+#
+#    print("----")
+#
+#    print("Symphony")
+#    sout = get_sigmsub(symout,normvector=normvector, mmin=1E9, mmax=1E10, rmin=5E-2, rmax=10E-2, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
+#    print(labels_mean)
+#    print(sout[0])
+#    print(labels_std)
+#    print(sout[1])
+#
+#    mh, z = nodedata(symout, [ParamKeys.mass_basic, ParamKeys.z_lastisolated], nfilter=nfilter_halos(None), summarize=True)
+#    print("log10(M_h)=",np.log10(mh))
+#    print("z=",z)
 
-    print("----")
+    mmin, mmax, mbins = 1E8, 1E10, 20
 
-    print("Symphony")
-    sout = get_sigmsub(symout,normvector=normvector, mmin=1E9, mmax=1E10, rmin=5E-2, rmax=10E-2, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
-    print(labels_mean)
-    print(sout[0])
-    print(labels_std)
-    print(sout[1])
+    mf_uevo_g, mf_evo_g = get_mf_proj(gouth5, normvector=np.identity(3)[2], mmin=mmin, mmax=mmax, mbins=mbins, rmin=1E-2, rmax=2E-2)
+    mf_uevo_s, mf_evo_s = get_mf_proj(symout, normvector=np.identity(3)[2], mmin=1E9, mmax=1E10, mbins=3, rmin=0, rmax=1E-1)
 
-    mh, z = nodedata(symout, [ParamKeys.mass_basic, ParamKeys.z_lastisolated], nfilter=nfilter_halos(None), summarize=True)
-    print("log10(M_h)=",np.log10(mh))
-    print("z=",z)
+    print(mf_evo_g)
 
-    fits_gout = fit_mf_proj(gouth5, normvector=np.identity(3)[2], mmin=1E8, mmax=1E9, mbins=3, rmin=1E-2, rmax=5E-2)
-    fits_sout = fit_mf_proj(symout, normvector=np.identity(3)[2], mmin=1E9, mmax=1E10, mbins=3, rmin=0, rmax=1E-1)
+    fit_gout_uevo, fit_gout_evo= fit_mf(mf_uevo_g[0], mf_uevo_g[1],), fit_mf(mf_evo_g[0], mf_evo_g[1],)  
 
-    #fits_sout = fit_mf_proj(symout, normvector=np.identity(3)[2], mmin=1E8, mmax=1E10, mbins=10, rmin=1E-2, rmax=2E-2)
+    fig, ax = plt.subplots(figsize=(9,6))
+
+    ax.plot(mf_evo_g[1][:-1], mf_evo_g[0])
+    ax.plot(mf_uevo_g[1][:-1], mf_uevo_g[0])
+
+    ax.set_prop_cycle(None)
+
+    pred = 10**(fit_gout_evo.predict(np.log10(mf_evo_g[1].reshape(-1,1))))
+    ax.plot(mf_evo_g[1], pred, linestyle="dashed")
+
+    pred = 10**(fit_gout_uevo.predict(np.log10(mf_uevo_g[1].reshape(-1,1))))
+    ax.plot(mf_uevo_g[1], pred, linestyle="dashed")
+
+    ax.loglog()
+
+    savefig_pngpdf(fig, "massfunction_sigmasub")
+
+    print("alpha", fit_gout_uevo.coef_)
+    print("alpha_b", fit_gout_evo.coef_)
+
+    return
 
     d = {"filepath": np.asarray([path_gout, path_symphony])}
 
