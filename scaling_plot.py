@@ -249,7 +249,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
 
     mh_mg, z_mg, scaling_nfw_arr =  scaling_nfw(h_rannulus,h_mspace,h_zspace,cosmo)
     mh_mg, z_mg, scaling_best_fit = scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, gamma_bf)
-    mh_mg, z_mg, scaling_g80 =      scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 0.8)
+    mh_mg, z_mg, scaling_g80 =      scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 0.6)
     mh_mg, z_mg, scaling_g200 =     scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 2.00)
     #mh_mg, z_mg, scaling_interp =   scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, fstripped=interp_t)
 
@@ -290,7 +290,7 @@ def plot_mh_scaling(fig, axs, filend, scaling_data):
 
     plot_scaling_def(fig, ax2, dict_g080,key_n_proj_bound, key_n_proj_bound_scatter,norm=1,
                         kwargs_fill=dict(visible=False), kwargs_plot=dict(color="tab:purple", linestyle="dashdot"),
-                        kwargs_plot_list=[dict(label=r"Han (2016) ($\gamma = 0.8$)"), {}],
+                        kwargs_plot_list=[dict(label=r"Han (2016) ($\gamma = 0.6$)"), {}],
                         key_x=KEY_DEF_HALOMASS, key_y=KEY_DEF_Z)
 
     plot_scaling_def(fig, ax2, dict_g200,key_n_proj_bound, key_n_proj_bound_scatter,norm=1,
@@ -359,7 +359,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
 
     mh_mg, z_mg, scaling_nfw_arr =  scaling_nfw(h_rannulus,h_mspace,h_zspace,cosmo)
     mh_mg, z_mg, scaling_best_fit = scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, gamma_bf)
-    mh_mg, z_mg, scaling_g80 =      scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 0.8)
+    mh_mg, z_mg, scaling_g80 =      scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 0.6)
     mh_mg, z_mg, scaling_g200 =     scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, 2.00)
     #mh_mg, z_mg, scaling_interp =   scaling_han_model(h_rannulus,h_mspace,h_zspace, cosmo, fstripped=interp_t) 
     
@@ -403,7 +403,7 @@ def plot_z_scaling(fig, axs, filend, scaling_data):
    #
     plot_scaling_def(fig, ax2, dict_g080,key_n_proj_bound, key_n_proj_bound_scatter,norm=1,
                         kwargs_fill=dict(visible=False), kwargs_plot=dict(color="tab:purple", linestyle="dashdot"),
-                        kwargs_plot_list=[dict(label=r"Han (2016) ($\gamma = 0.8$)"), {}])
+                        kwargs_plot_list=[dict(label=r"Han (2016) ($\gamma = 0.6$)"), {}])
 
     plot_scaling_def(fig, ax2, dict_g200,key_n_proj_bound, key_n_proj_bound_scatter,norm=1,
                         kwargs_fill=dict(visible=False), kwargs_plot=dict(color="tab:brown", linestyle=(0, (3, 1, 1, 1, 1, 1))),
