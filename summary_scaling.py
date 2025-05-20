@@ -20,7 +20,7 @@ from subscript.tabulatehdf5 import tabulate_trees
 from plotting_util import savemacro
 from summary import summary_macro, get_hdf5_dir_path, macro_gen_runner_parallel, get_hdf5_dir
 
-if __name__ == '__main__':
+def main():
     Meta.cache = False
     logging.root.setLevel(logging.INFO) 
 
@@ -52,4 +52,6 @@ if __name__ == '__main__':
     logging.info("Finished")
 
     savemacro(macro_out, fname)
+
+if __name__ == '__main__':
     main()

@@ -211,8 +211,7 @@ def scaling_nfw_dict(rannulus, mh_space:np.ndarray, z_space:np.ndarray, cosmo,ms
 
 def main():
     fname = "scaling.csv"
-    path_csv = "data/output/analysis_scaling_nd_annulus_new.csv"
-    path_file =  "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_file = "data/galacticus/mh1E13z05/dmo.hdf5"
 
     path_file_hdf5_um = "out/hdf5/scaling_um.hdf5"
     path_file_hdf5 = "out/hdf5/summary_scaling.hdf5"
@@ -222,19 +221,17 @@ def main():
     
     scaling_data_hdf5_um = HDF5Wrapper(hdf5_scaling_um)
     scaling_data_hdf5 = HDF5Wrapper(hdf5_scaling)
-    #scaling_data    = 
+
     
     key_n_proj_h = "n evolved 0.01 < r_{2d} <= 0.02, 1.00e+08 < m_e < 1.00e+10 (mean)/out0"
-    key_n_proj_infall_h = "n unevolved 0.01 < r_{2d} <= 0.02, 1.00e+08 < m_e < 1.00e+10 (mean)/out0" 
+    key_n_proj_infall_h = "n unevolved 0.01 < r_{2d} <= 0.02, 1.00e+08 < m < 1.00e+10 (mean)/out0"
     key_z_h = "z (mean)/out0"
     key_mh_h = "halo mass (mean)/out0"
 
     key_n_proj = PARAM_KEY_N_PROJ_BOUND
     key_n_proj_infall = PARAM_KEY_N_PROJ_INFALL
 
-    scaling_data = pd.read_csv(path_csv)
-
-    mh, z = scaling_data[KEY_DEF_HALOMASS], scaling_data[KEY_DEF_Z]
+    mh, z = scaling_data_hdf5[key_mh_h], scaling_data_hdf5[key_z_h]
     mh_range = (np.min(mh), np.max(mh))
     z_range = (np.min(z), np.max(z))
 
@@ -253,20 +250,18 @@ def main():
 
     #interp_t = galacticus_interp_tstripped(filend, interp_rrange_rvf, interp_rbins, interp_mrange)
     
-    han_gamma = np.linspace(0.8, 2, 13)
+    han_gamma = np.linspace(0.6, 2, 17)
 
     nfw_dict = scaling_nfw_dict(rannulus,mspace,zspace,cosmo)
     
     _filter_m = scaling_data_hdf5[key_mh_h] > 1E13
 
     fits = {
-                "Galacticus (Unevolved)"                :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj_infall),   
-                "Galacticus (Evolved)"                  :scaling_fit_mhz_def(scaling_data, key_n_proj=key_n_proj),
                 "Galacticus (UM, Evolved)"              :scaling_fit_mhz_def(scaling_data_hdf5_um, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h),   
-                "Galacticus (Evolved) (new)"            :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h),   
-                "Galacticus (Evolved) (new) m_h > 1E13" :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h, filter=_filter_m),   
-                "Han (2016) (Gamma Interp)"             :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=(0.94,1.24)),
-                #"Han (2016) (Galacticus Interp)"        :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,fstripped=interp_t),
+                "Galacticus (Unevolved)"            :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_infall_h, key_mass=key_mh_h, key_z=key_z_h),   
+                "Galacticus (Evolved)"            :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h),   
+                "Galacticus (Evolved) m_h > 1E13" :scaling_fit_mhz_def(scaling_data_hdf5, key_n_proj=key_n_proj_h, key_mass=key_mh_h, key_z=key_z_h, filter=_filter_m),   
+                "Han (2016) (Gamma Interp)"             :scaling_fit_han_model(rannulus,mspace,zspace,cosmo,gamma=(1.06,0.67)),
                 "NFW"                                   :scaling_fit_mhz(nfw_dict,KEY_DEF_HALOMASS,KEY_DEF_Z,PARAM_KEY_N_PROJ_INFALL)
         } 
     

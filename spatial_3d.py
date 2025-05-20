@@ -15,7 +15,7 @@ from subscript.defaults import ParamKeys
 
 from plotting_util import set_plot_defaults, savefig_pngpdf, plot_histogram, KWARGS_DEF_PLOT
 from symutil import symphony_to_galacticus_hdf5
-from han_modelv2 import get_han_model_gout, fit_han_model_gout
+from han_model_fit import get_han_model_gout, fit_han_model_gout
 
 @gscript
 def get_dndv(gout, bins=None, range=None, rvfraction=False,  **kwargs):
@@ -84,6 +84,7 @@ def plot_han_model(fig, ax:Axes, gout, nfilter, rbins_rvf, scale_x = 1.0, scale_
     kwargs_plot = {} if kwargs_plot is None else kwargs_plot
 
     fit = fit_han_model_gout(gout, rbins_rvf=rbins_rvf, nfilter=nfilter)
+    print(fit.coef_)
     dndv_bf = get_han_model_gout(gout, fit=fit, rbins_rvf=rbins_rvf, nfilter=nfilter)
 
     ax.plot(bin_avg(rbins_rvf) * scale_x, dndv_bf * scale_y, **(KWARGS_DEF_PLOT | kwargs_plot))    
@@ -192,12 +193,14 @@ def main():
              )    
 
     rbins_lin = np.linspace(0.1, 1.0, 100)
+    rbins_log = np.geomspace(0.1, 1.0, 10)
+
     plot_han_model(
                    fig,
                    ax,
                    gout,
                    nfilter=nfsubh_evo,
-                   rbins_rvf=rbins_lin,
+                   rbins_rvf=rbins_log,
                    scale_y=1E-9,
                    kwargs_plot=dict(
                                     color="tab:purple",

@@ -20,7 +20,7 @@ def main():
     path_symdir = "data/symphony/SymphonyGroup/"
 
     #path_file = "data/galacticus/xiaolong_update/m1e13_z0_2/lsubmodv3.1-scaling-nd-date-05.12.2024-time-18.29.10-basic-date-05.12.2024-time-18.29.10-z-2.00000E-01-hm-8.85867E+12.xml.hdf5"
-    path_file = "/home/charles/research/lpanalysis/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    #path_file = "/home/charles/research/lpanalysis/data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
     
     #rrange_rvf = PARAM_DEF_RRANGE_RVF
     rrange_rvf = (0.1, 1)
@@ -39,7 +39,6 @@ def main():
     df = pd.DataFrame(out, index=[0])
     
     savedf(df, "sym_sigsub.csv")
-
 
 
 if __name__ == "__main__":

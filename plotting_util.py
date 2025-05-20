@@ -8,6 +8,7 @@ import os.path as path
 import matplotlib.patheffects as pe
 from typing import Callable
 import logging
+import os
 
 from subscript.macros import macro_write_out_hdf5
 from subscript.wrappers import multiproj, freeze
@@ -25,6 +26,7 @@ PATH_OUT = "out"
 PATH_PLOTS = "plots"
 PATH_CSV = "csv"
 PATH_HDF5 = "hdf5"
+PATH_LOGS = "logs"
 
 PARAM_DEF_RRANGE_RVF = (0.015, 1)
 PARAM_DEF_MRANGE = (1E8, 1E9)
@@ -53,7 +55,10 @@ class PlotStyling():
                             color=color_gal_plot,
                             path_effects=[pe.Stroke(linewidth=8, foreground=color_gal_plot_foreground), pe.Normal()]                    
                           )
- 
+def createdir(dpath):
+    if not path.exists(dpath):
+        os.makedirs(dpath) 
+
 
 def set_plot_defaults():
     path_fonts = "fonts"
@@ -81,23 +86,36 @@ def set_plot_defaults():
     mpl.rcParams.update({'axes.linewidth':2})
 
 def savefig(fig, name):
-    fig.savefig(path.join(PATH_OUT,PATH_PLOTS,name), bbox_inches="tight")
+    path_plots = path.join(PATH_OUT, PATH_PLOTS)
+    createdir(path_plots)
+    _out = path.join(path_plots,name)
+    fig.savefig(_out, bbox_inches="tight")
+    print(f"Wrote Figure to {_out}")
 
 def savefig_pngpdf(fig, name):
     savefig(fig,name + ".png")
     savefig(fig,name + ".pdf")
 
 def savedf(df, name):
-    df.to_csv(path.join(PATH_OUT,PATH_CSV,name), index=False)
+    createdir(name)
+    _out = path.join(PATH_OUT,PATH_CSV,name)
+    df.to_csv(_out, index=False)
+    print(f"Wrote DataFrame to {_out}")
 
-def savemacro(macro_out, name, notes=None, stamp_date=True):
-    with h5py.File(path.join(PATH_OUT, PATH_HDF5, name), "w") as f:
+def savemacro(macro_out, name, notes=None, stamp_date=True): 
+    path_macro = path.join(PATH_OUT, PATH_HDF5)
+    createdir(path_macro)
+    _out = path.join(path_macro, name)
+    with h5py.File(_out, "w") as f:
         macro_write_out_hdf5(f, macro_out, notes=notes, stamp_date=stamp_date)
+    print(f"Wrote HDF5 to {_out}")
 
 def getlogger(fname):
+    path_logs = path.join(PATH_OUT, PATH_LOGS) 
+    createdir(path_logs)
     logger = logging.getLogger()
     logging.basicConfig(
-                        filename=path.join("out/logs/", fname),
+                        filename=path.join(path_logs, fname),
                         level=logging.INFO
                        )
     logger.setLevel(logging.INFO)

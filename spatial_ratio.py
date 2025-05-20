@@ -15,15 +15,10 @@ from subscript.defaults import ParamKeys
 from subscript.scripts.nfilters import nfilter_subhalos_valid, nfilter_halos
 from subscript.wrappers import freeze
 
-from han_modelv2 import profile_nfw
 from plotting_util import savefig_pngpdf, set_plot_defaults, KWARGS_DEF_PLOT, PlotStyling
 from spatial_3d import get_dndv
 from symutil import symphony_to_galacticus_hdf5
-from han_modelv2 import fit_han_model_gout, fit_han_model
-
-def select_index_closest_mh_z(mh, z, select_mh, select_z):
-    vec = np.asarray(((mh - select_mh) / np.sqrt(np.mean(mh)**2), (z - select_z) / (np.sqrt(np.mean(z)**2))))
-    return np.argmin(np.linalg.norm(vec, axis=0))
+from han_model_fit import fit_han_model_gout, fit_han_model, profile_nfw, select_index_closest_mh_z
 
 def spatial_ratio(dndv, rbins_rvf, host_rv, host_c):
     rvf = bin_avg(rbins_rvf)
@@ -211,7 +206,6 @@ def main():
     ax0.legend()
     fig.tight_layout()    
     savefig_pngpdf(fig, fname) 
-
 
 if __name__ == "__main__":
     main()

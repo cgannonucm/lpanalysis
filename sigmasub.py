@@ -125,7 +125,7 @@ def main():
     fname = "sigmasub.csv"
     #path_gout = "data/galacticus/um_update/dmo/dmo.hdf5"
     #path_gout = "data/galacticus/summary/dmo.hdf5"
-    path_gout = "data/galacticus/xiaolong_update/m1e13_z0_5/lsubmodv3.1-M1E13-z0.5-nd-date-06.12.2024-time-14.12.04-basic-date-06.12.2024-time-14.12.04-z-5.00000E-01-hm-1.00000E+13.xml.hdf5"
+    path_gout = "data/galacticus/mh1E13z05/dmo.hdf5"
 
     path_symphony = "data/symphony/SymphonyGroup/"
 
@@ -179,8 +179,10 @@ def main():
         d[labels_mean[n]] = np.asarray([gout[0][n], sout[0][n]])
         d[labels_std[n]] = np.asarray([gout[1][n], sout[1][n]])
 
-    d["alpha"]   = np.asarray((fits_gout[0].coef_, fits_sout[0].coef_))
-    d["alpha_b"] = np.asarray((fits_gout[1].coef_, fits_sout[1].coef_))
+    d["alpha"]   = np.asarray((fits_gout[0].coef_, fits_sout[0].coef_)).flatten()
+    d["alpha_b"] = np.asarray((fits_gout[1].coef_, fits_sout[1].coef_)).flatten()
+
+    print(d)
 
     savedf(pd.DataFrame.from_dict(d), fname)
 

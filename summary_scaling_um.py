@@ -20,7 +20,7 @@ from plotting_util import savemacro
 
 from summary import summary_macro, get_hdf5_dir_path, macro_gen_runner_parallel, get_hdf5_dir
 
-if __name__ == "__main__":
+def main():
     logging.root.setLevel(logging.INFO)
 
     fname = "scaling_um.hdf5"
@@ -39,8 +39,10 @@ if __name__ == "__main__":
     def mrp(path):
         return macro_gen_runner_parallel(macros, statfuncs=statfuncs)(path)
 
-    with Pool(32) as pool: 
-        macro_results = pool.map(mrp, gout_paths)
+    #with Pool(32) as pool: 
+        #macro_results = pool.map(mrp, gout_paths)
+
+    macro_results = [mrp(path) for path in gout_paths]
 
     runner = macro_gen_runner(lambda *a,**k: macro_results)
 
@@ -49,3 +51,6 @@ if __name__ == "__main__":
     logging.info("Finished")
 
     savemacro(macro_out, fname)
+
+if __name__ == "__main__":
+    main()

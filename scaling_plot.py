@@ -13,7 +13,7 @@ from subscript.scripts.nfilters import nfilter_subhalos_valid
 
 from plotting_util import *
 from scaling_fit import scaling_fit_mhz, KEY_DEF_HALOMASS, KEY_DEF_Z, scaling_han_model, scaling_nfw
-from han_modelv2 import fit_han_model_gout
+from han_model_fit import fit_han_model_gout
 from summary import HDF5Wrapper
 from symutil import symphony_to_galacticus_dict
 

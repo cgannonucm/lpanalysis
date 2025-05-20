@@ -134,9 +134,9 @@ if __name__ == "__main__":
     def mrp(path):
         return macro_gen_runner_parallel(macros, statfuncs)(path)
 
-    with Pool(16) as pool: 
-         macro_results = pool.map(mrp, gout_paths)
-    #macro_results = [mrp(path) for path in gout_paths]
+    #with Pool(16) as pool: 
+         #macro_results = pool.map(mrp, gout_paths)
+    macro_results = [mrp(path) for path in gout_paths]
 
     runner = macro_gen_runner(lambda *a,**k: macro_results)
 

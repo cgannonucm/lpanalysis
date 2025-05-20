@@ -21,7 +21,6 @@ from numpy.dtypes import StrDType
 from plotting_util import savedf
 from scaling_fit import  scaling_fit_mhz_def, PARAM_KEY_N_PROJ_BOUND
 
-
 def scaling_F(mh, z, k1, k2, mscale=1E13, zshift=0.5):
     return np.power(mh / mscale, k1) * np.power(z + zshift, k2)
 

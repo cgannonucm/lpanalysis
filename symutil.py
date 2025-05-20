@@ -21,6 +21,9 @@ def symphony_to_galacticus_dict(haloFolder:str, iSnap=-1, cache=True,  path_cach
     if cache and path.exists(path_fhash):
         with open(path_fhash, "rb") as pf:
             return pickle.load(pf) 
+
+    if cache and not path.exists(path_cache):
+        os.makedirs(path_cache)
         
     halonames  = os.listdir(haloFolder)
 

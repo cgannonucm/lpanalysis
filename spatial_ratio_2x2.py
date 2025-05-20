@@ -6,7 +6,7 @@ import matplotlib as mpl
 from matplotlib.axes import Axes
 from matplotlib import ticker
 
-from han_modelv2 import profile_nfw
+from han_model_fit import profile_nfw
 from subscript.scripts.histograms import bin_avg
 from plotting_util import savefig_pngpdf, set_plot_defaults, KWARGS_DEF_PLOT
 
