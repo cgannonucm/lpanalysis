@@ -84,8 +84,8 @@ def plot_scaling_def(fig, ax:Axes, data, key_toplot, key_toplot_scatter, norm = 
 #
 #    scale_mf = cfactor_shmf(mrange_sym, mrange_gal, alpha=alpha)
 #
-#    out_mw = macro_sigma_sub(file_sym_mw   , 1E8, -1.93,*rrange_sym, mrange=mrange_sym)
-#    out_gr = macro_sigma_sub(file_sym_group, 1E8, -1.93,*rrange_sym, mrange=mrange_sym)
+#    out_mw = macro_sigma_sub(file_sym_mw   , 1E8, -1.97,*rrange_sym, mrange=mrange_sym)
+#    out_gr = macro_sigma_sub(file_sym_group, 1E8, -1.97,*rrange_sym, mrange=mrange_sym)
 #
 #    mh_mw = np.mean(script_select_nodedata(file_sym_mw, script_selector_halos, [ParamKeys.mass_basic]))
 #    mh_gr = np.mean(script_select_nodedata(file_sym_group, script_selector_halos, [ParamKeys.mass_basic]))

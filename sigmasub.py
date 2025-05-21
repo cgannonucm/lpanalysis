@@ -116,7 +116,7 @@ def get_mf_proj(gout, normvector, mmin, mmax, mbins, rmin, rmax, **kwargs):
 
 
 def fit_mf(massfunction, massfunction_bins):
-    x = np.log10((bin_avg(massfunction_bins))).reshape(-1, 1)
+    x = np.log10(bin_avg(massfunction_bins)).reshape(-1, 1)
     y = np.log10(massfunction)
     return LinearRegression().fit(x, y)
 
@@ -137,7 +137,7 @@ def main():
     symout = symphony_to_galacticus_hdf5(path_symphony, iSnap=203)
 
     normvector = np.identity(3)
-    alpha = -1.93
+    alpha = -1.97
 
     gal_mmin, gal_mmax = 10**(8.0) , 10**(9)
     gal_rmin, gal_rmax = 1E-2, 2E-2
@@ -147,56 +147,56 @@ def main():
     labels_mean = ["sigsub", "fs * sigsub", "fs", "fm", "nevo"]
     labels_std  = [l + " [std]" for l in labels_mean]
 
-#    print("Galacticus")
-#    gout = get_sigmsub(gouth5,normvector=normvector, mmin=gal_mmin, mmax=gal_mmax, rmin=gal_rmin, rmax=gal_rmax, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
-#    print(labels_mean)
-#    print(gout[0])
-#    print(labels_std)
-#    print(gout[1])
-#
-#    print("----")
-#
-#    print("Symphony")
-#    sout = get_sigmsub(symout,normvector=normvector, mmin=1E9, mmax=1E10, rmin=5E-2, rmax=10E-2, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
-#    print(labels_mean)
-#    print(sout[0])
-#    print(labels_std)
-#    print(sout[1])
-#
-#    mh, z = nodedata(symout, [ParamKeys.mass_basic, ParamKeys.z_lastisolated], nfilter=nfilter_halos(None), summarize=True)
-#    print("log10(M_h)=",np.log10(mh))
-#    print("z=",z)
+    print("Galacticus")
+    gout = get_sigmsub(gouth5,normvector=normvector, mmin=gal_mmin, mmax=gal_mmax, rmin=gal_rmin, rmax=gal_rmax, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
+    print(labels_mean)
+    print(gout[0])
+    print(labels_std)
+    print(gout[1])
+
+    print("----")
+
+    print("Symphony")
+    sout = get_sigmsub(symout,normvector=normvector, mmin=1E9, mmax=1E10, rmin=5E-2, rmax=10E-2, alpha=alpha, nfilter=nfilter, summarize=True, statfuncs=(np.mean, np.std))
+    print(labels_mean)
+    print(sout[0])
+    print(labels_std)
+    print(sout[1])
+
+    mh, z = nodedata(symout, [ParamKeys.mass_basic, ParamKeys.z_lastisolated], nfilter=nfilter_halos(None), summarize=True)
+    print("log10(M_h)=",np.log10(mh))
+    print("z=",z)
 
     mmin, mmax, mbins = 1E8, 1E10, 20
 
     mf_uevo_g, mf_evo_g = get_mf_proj(gouth5, normvector=np.identity(3)[2], mmin=mmin, mmax=mmax, mbins=mbins, rmin=1E-2, rmax=2E-2)
     mf_uevo_s, mf_evo_s = get_mf_proj(symout, normvector=np.identity(3)[2], mmin=1E9, mmax=1E10, mbins=3, rmin=0, rmax=1E-1)
 
-    print(mf_evo_g)
+    fits_gout = fit_mf(*mf_uevo_g), fit_mf(*mf_evo_g)  
+    fits_sout = fit_mf(*mf_uevo_s), fit_mf(*mf_evo_g)  
 
-    fit_gout_uevo, fit_gout_evo= fit_mf(mf_uevo_g[0], mf_uevo_g[1],), fit_mf(mf_evo_g[0], mf_evo_g[1],)  
+    fit_gout_uevo, fit_gout_evo = fits_gout
+
 
     fig, ax = plt.subplots(figsize=(9,6))
 
-    ax.plot(mf_evo_g[1][:-1], mf_evo_g[0])
-    ax.plot(mf_uevo_g[1][:-1], mf_uevo_g[0])
+    ax.plot(bin_avg(mf_evo_g[1]), mf_evo_g[0])
+    ax.plot(bin_avg(mf_uevo_g[1]), mf_uevo_g[0])
 
     ax.set_prop_cycle(None)
 
     pred = 10**(fit_gout_evo.predict(np.log10(mf_evo_g[1].reshape(-1,1))))
-    ax.plot(mf_evo_g[1], pred, linestyle="dashed")
+
+    ax.plot(mf_evo_g[1], pred, linestyle="dashed", label="Galacticus Evolved")
 
     pred = 10**(fit_gout_uevo.predict(np.log10(mf_uevo_g[1].reshape(-1,1))))
-    ax.plot(mf_uevo_g[1], pred, linestyle="dashed")
+    ax.plot(mf_uevo_g[1], pred, linestyle="dashed", label="Galacticus Unevolved")
 
     ax.loglog()
 
-    savefig_pngpdf(fig, "massfunction_sigmasub")
-
-    print("alpha", fit_gout_uevo.coef_)
-    print("alpha_b", fit_gout_evo.coef_)
-
-    return
+    ax.set_xlabel("m [$\mathrm{M}_\odot$]")
+    ax.set_ylabel(r"Mass Function [$\mathrm{M}_\odot^{-1}$]")
+    ax.legend()
 
     d = {"filepath": np.asarray([path_gout, path_symphony])}
 
@@ -207,8 +207,8 @@ def main():
     d["alpha"]   = np.asarray((fits_gout[0].coef_, fits_sout[0].coef_)).flatten()
     d["alpha_b"] = np.asarray((fits_gout[1].coef_, fits_sout[1].coef_)).flatten()
 
-    print(d)
 
+    savefig_pngpdf(fig, "massfunction_sigmasub")
     savedf(pd.DataFrame.from_dict(d), fname)
 
 if __name__ == "__main__":
