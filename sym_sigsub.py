@@ -33,8 +33,8 @@ def main():
     sym_nodedata = symphony_to_galacticus_dict(path_symdir, iSnap=203)
 
     #mh = np.mean(script_select_nodedata(sym_nodedata, script_selector_halos, [GParam.MASS_BASIC]))
-    out = macro_sigma_sub(sym_nodedata, 1E8, -1.93, 0, 5E-2, mrange_sym)
-    #out = macro_sigma_sub(filend, 1E8, -1.93, 1E-2, 2E-2, (1E8, 1E9))
+    out = macro_sigma_sub(sym_nodedata, 1E8, -1.97, 0, 5E-2, mrange_sym)
+    #out = macro_sigma_sub(filend, 1E8, -1.97, 1E-2, 2E-2, (1E8, 1E9))
 
     df = pd.DataFrame(out, index=[0])
     

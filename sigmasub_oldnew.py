@@ -134,7 +134,7 @@ def main():
     paf5(path_symphony, iSnap=203)
 
     normvector = np.identity(3)
-    alpha = -1.93
+    alpha = -1.97
 
     gal_mmin, gal_mmax = 10**(8.0) , 10**(9)
     gal_rmin, gal_rmax = 1E-2, 2E-2
