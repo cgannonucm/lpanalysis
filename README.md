@@ -13,9 +13,9 @@ Note that the "scaling" directory is large ~177gb. If this is too large for you,
 
 3. Install python dependencies
 Install dependencies from requirments.txt file
-'''
-pip instal -r requirements.txt
-'''
+```
+pip install -r requirements.txt
+```
 
 4. Download symphony halo data 
 Download the symphony halo data on both the group and Wilky Way scales. You will need symphony credentials to do this. A script is included to do this. Simply place your symphony credentials in a file named symphony_credentials.txt with your username as the first line and password in thesecond line. For example,
