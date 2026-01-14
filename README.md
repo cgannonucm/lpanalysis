@@ -3,7 +3,7 @@ Analysis for Gannon et al. 2025 (https://arxiv.org/abs/2501.17362)
 
 ## Instalation / Running
 1. Clone this repository
-2. ```
+```
 git clone https://github.com/cgannonucm/lpanalysis
 ```
 
