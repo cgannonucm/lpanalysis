@@ -2,16 +2,16 @@
 Analysis for Gannon et al. 2025 (https://arxiv.org/abs/2501.17362)
 
 ## Instalation / Running
-1. Clone this repository 
-'''
+1. Clone this repository
+2. ```
 git clone https://github.com/cgannonucm/lpanalysis
-'''
+```
 
-2. Download galacticus outputs 
+3. Download galacticus outputs 
 Download files from https://ucmerced.box.com/s/gl3lg60e80783m0hq3po4zrzgi9t63bt and place in "data/galacticus" directory
 Note that the "scaling" directory is large ~177gb. If this is too large for you, you can download all directories except the scaling directory and can instead download the summarized version here: https://ucmerced.box.com/s/ugtvs2rto2x5opbv2mlesbdnze2un87m . Place the contents of this dodownloaded file in the "out/" directory.
 
-3. Install python dependencies
+4. Install python dependencies
 Install dependencies from requirments.txt file
 ```
 pip install -r requirements.txt
